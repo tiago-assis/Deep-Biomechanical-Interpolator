@@ -37,7 +37,7 @@ To speed up the process, one can use `make -j<N>` instead of `make` to build in 
 ## Usage
 Assuming the [first step](1_dataset_processing) was successfully concluded, the second step is simply run by providing the path of processed data generated in the first step as input to the following scripts that should be run sequentially:
 
-*Note that each of these steps might take several hours or days to complete.*
+*Note that each of these steps might take several hours or days to complete if you're using the full datasets.*
 ```
 cd 2_biomechanical_simulations/
 python3 2.1_generate_solver_inputs.py /path/to/the/first/step/output/directory
