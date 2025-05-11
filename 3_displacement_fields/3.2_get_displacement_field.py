@@ -148,7 +148,7 @@ def main(input_path: str, tf_cli_path: str, nifti: bool = False) -> None:
                     reference_path = glob.glob(os.path.join(case_path, f"*T*{case_num}.nrrd"))
 
                 tqdm.write("\tExtracting displacement field...")
-                npz_out_path = os.path.join(sim_path, f"disp_field_{case_num}.npz")
+                npz_out_path = os.path.join(sim_path, f"disp_field_{case_num}_{sim}.npz")
                 if os.path.exists(npz_out_path):
                     tqdm.write(f"\tDisplacement field for this case already exists. Skipping.")
                     continue   
