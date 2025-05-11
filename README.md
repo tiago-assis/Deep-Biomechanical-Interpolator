@@ -7,7 +7,7 @@ The project explores the integration of physics-based modeling as supervision fo
 
 The repository includes all the necessary code and instructions to reproduce the results and experiments discussed in the thesis.
 
-##### The [2_biomechanical_simulations](2_biomechanical_simulations/) directory of this repository includes adapted and optimized code originally authored by the [Intelligent Systems for Medicine Laboratory](https://isml.ecm.uwa.edu.au/ISML/index.php?title=ISML_Main_Page), The University of Western Australia, which was used in the work described in the following main publications: [1](https://doi.org/10.1016/j.media.2019.06.004), [2](http://dx.doi.org/10.1002/cnm.3539), [3](https://doi.org/10.1016/j.compbiomed.2022.105271), [4](http://dx.doi.org/10.1007/s11548-023-02881-7).
+##### The [2_biomechanical_simulations](2_biomechanical_simulations/) directory of this repository includes code adapted and optimized by me but that was originally authored by the [Intelligent Systems for Medicine Laboratory](https://isml.ecm.uwa.edu.au/ISML/index.php?title=ISML_Main_Page), The University of Western Australia, which was used in the work described in the following main publications: [1](https://doi.org/10.1016/j.media.2019.06.004), [2](http://dx.doi.org/10.1002/cnm.3539), [3](https://doi.org/10.1016/j.compbiomed.2022.105271), [4](http://dx.doi.org/10.1007/s11548-023-02881-7).
 
 ## Installation
 The code was mostly tested with [Python 3.10](https://www.python.org/downloads/release/python-31011/) in an [Ubuntu 22.04](https://releases.ubuntu.com/jammy/) system (either natively or through [WSL](https://learn.microsoft.com/en-us/windows/wsl/)), thus this is the recommended environment to use when running any code in this repository.
