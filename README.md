@@ -12,9 +12,7 @@ The repository includes all the necessary code and instructions to reproduce the
 ## Installation - MANDATORY READING
 The code was mostly tested with [Python 3.10](https://www.python.org/downloads/release/python-31011/) in an [Ubuntu 22.04](https://releases.ubuntu.com/jammy/) system (either natively or through [WSL](https://learn.microsoft.com/en-us/windows/wsl/)), thus this is the recommended environment to use when running any code in this repository.
 
-This project utilizes very different codebases, including [SynthSeg](https://github.com/BBillot/SynthSeg), [ExplicitSim](https://bitbucket.org/explicitsim/explicitsim/src/c6109a36474d539e27fefb0bef390d596d7aac51/INSTALL.md)*, and [3DSIFT-Rank](https://github.com/3dsift-rank/3DSIFT-Rank/tree/Appearance%2BGeometry). Thus, **any errors during installation should first be debugged by reading the main documentation and/or repositories of each of these software**.
-
-###### \* The source code for [ExplicitSim](https://bitbucket.org/explicitsim/explicitsim/src/master/) used in this project has been altered to include the effects of gravity in the simulations and is not the same as the one found in the original documentation page. The build instructions still apply and should be followed! The correct and altered software code is provided in this repository.
+This project utilizes very different codebases, including [SynthSeg](https://github.com/BBillot/SynthSeg), [ExplicitSim](https://bitbucket.org/explicitsim/explicitsim/src/c6109a36474d539e27fefb0bef390d596d7aac51/INSTALL.md), and [3DSIFT-Rank](https://github.com/3dsift-rank/3DSIFT-Rank/tree/Appearance%2BGeometry). Thus, **any errors during installation should first be debugged by reading the main documentation and/or repositories of each of these software**.
 
 ### 1. Download the ReMIND and UPENN-GBM datasets:
 - Follow the instructions and download the [ReMIND](https://doi.org/10.7937/3RAG-D070) dataset from [here](https://www.cancerimagingarchive.net/collection/remind/).
