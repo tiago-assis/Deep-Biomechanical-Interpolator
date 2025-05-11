@@ -40,7 +40,7 @@ python3 3.1_resample_spacing.py <input_path> [OPTIONS]
 
 When no `--nrrd` or `--nifti` flags are provided, both imaging formats are resampled. If a segmentation file is detected ("seg" or "mask" in the file name), the interpolation mode will automatically be changed to "nearest". 
 
-- The program will output a file with the same format and name the input file, but with an added `"resampled_"` prefix. The original file is not overwritten.
+- The program will output a file with the same format and name as the input file, but with an added `"resampled_"` prefix. The original file is not overwritten.
 
 ---
 
