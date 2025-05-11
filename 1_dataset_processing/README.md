@@ -1,7 +1,7 @@
 # Dataset Processing
-This directory contains the code to process the datasets and construct a organized directory with the required inputs (images, segmentations, surface models) ready for the biomechanical simulation pipeline.
+This directory contains the code to process the datasets and construct an organized directory with the required inputs (images, segmentations, surface models) ready for the biomechanical simulation pipeline.
 
-Finds the tumor segmentations and corresponding image volumes for each case of ReMIND, converts DICOM files to NIfTI and NRRD, predicts a brain segmentation using [SynthSeg](https://github.com/BBillot/SynthSeg), manipulates and edits tumor and brain segmentations to generate a brain surface model with [3D Slicer](https://www.slicer.org/), and saves it in an organized ouput structure.
+Finds the tumor segmentations and corresponding image volumes for each case of ReMIND, converts DICOM files to NIfTI and NRRD, predicts a brain segmentation using [SynthSeg](https://github.com/BBillot/SynthSeg), manipulates and edits tumor and brain segmentations to generate a brain surface model with [3D Slicer](https://www.slicer.org/), and saves it in an organized output structure.
 
 ## Installation
 ### Install [tensorflow](https://www.tensorflow.org/install), [CUDA](https://developer.nvidia.com/cuda-toolkit-archive), and [cuDNN](https://developer.nvidia.com/rdp/cudnn-archive):
