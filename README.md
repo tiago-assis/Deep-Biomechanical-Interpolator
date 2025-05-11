@@ -1,5 +1,5 @@
 # Physics-Guided Deep Learning for Sparse Data-Driven Brain Shift Registration
-###### <span style="color: purple;">**WORK IN PROGRESS...**</span>
+###### **WORK IN PROGRESS...**
 
 This repository contains the implementation of the work done throughout my MSc thesis. 
 
@@ -22,9 +22,9 @@ This project utilizes very different codebases, including [SynthSeg](https://git
 
 ReMIND images and segmentations were downloaded in the DICOM and NRRD formats, respectively. UPENN-GBM images and segmentations were both downloaded in the NIFTI format.
 
-This repository utilizes the ReMIND and UPENN-GBM data as is, thus it is expected that the inner directory structures remains unaltered after downloading.
+This repository utilizes the ReMIND and UPENN-GBM data as is; thus, it is expected that the inner directory structures remain unaltered after downloading.
 
-#### Below you will find each dataset directory structure as is when downloaded into a `data/` directory. In <span style="color: green;">green font</span> you can find the subdirectories whose absolute paths will later be required as input for the first proper step of the work pipeline:
+**Below you will find each dataset directory structure as is when downloaded into a `data/` directory and the subdirectories whose absolute paths will later be required as input for the first proper step of the work pipeline:**
 
 ### 1.1. ReMIND directory structures
 Images and segmentations in DICOM format:
@@ -32,7 +32,7 @@ Images and segmentations in DICOM format:
 <code>data/
 |-- ReMIND/
 |   |-- manifest-1746853315606/
-|   |   |-- <span style="color: green;">ReMIND/</span>
+|   |   |-- ReMIND/ # you will need the path to this directory!
 |   |   |   |-- ReMIND-001/
 |   |   |   |   |-- 12-25-1982-NA-Intraop-*/...
 |   |   |   |   |-- 12-25-1982-NA-Preop-*/...
@@ -47,7 +47,7 @@ Segmentations in NRRD format:
 <pre>
 <code>data/
 |-- ReMIND
-|   |--  <span style="color: green;">ReMIND_NRRD_Seg_Sep_2023/</span>
+|   |-- ReMIND_NRRD_Seg_Sep_2023/ # you will need the path to this directory!
 |   |   |-- ReMIND-001/
 |   |   |   |-- ReMIND-001-*.nrrd
 |   |   |-- ReMIND-002/
@@ -60,7 +60,7 @@ Segmentations in NRRD format:
 <code>data/
 |-- UPENN-GBM/
 |   |-- NIfTI-files/
-|   |   |-- <span style="color: green;">automated_segm/</span>
+|   |   |-- automated_segm/ # you will need the path to this directory!
 |   |   |   |-- UPENN-GBM-00002_11_automated_approx_segm.nii.gz
 |   |   |   |-- ...
 |   |   |-- images_DSC/
@@ -73,7 +73,7 @@ Segmentations in NRRD format:
 |   |   |   |   |   |-- UPENN-GBM-00002_11/
 |   |   |   |   |   |   |-- UPENN-GBM-00002_11_DTI_AD.nii.gz
 |   |   |   |   |   |   |-- ...
-|   |   |-- <span style="color: green;">images_segm/</span>
+|   |   |-- images_segm/ # you will need the path to this directory!
 |   |   |   |-- UPENN-GBM-00002_11_segm.nii.gz
 |   |   |   |-- ...
 |   |   |-- images_structural/
@@ -81,7 +81,7 @@ Segmentations in NRRD format:
 |   |   |   |   |-- UPENN-GBM-00002_11_FLAIR.nii.gz
 |   |   |   |   |-- UPENN-GBM-00002_11_T1.nii.gz
 |   |   |   |   |-- ...
-|   |   |-- <span style="color: green;">images_structural_unstripped/</span>
+|   |   |-- images_structural_unstripped/ # you will need the path to this directory!
 |   |   |   |-- UPENN-GBM-00002_11/
 |   |   |   |   |-- UPENN-GBM-00002_11_FLAIR_unstripped.nii.gz
 |   |   |   |   |-- UPENN-GBM-00002_11_T1_unstripped.nii.gz
@@ -124,20 +124,20 @@ pip3 install -r requirements.txt
 ```
 
 ### 6. Follow the `README.md` instructions inside each numerically-ordered folder.
-This work follows a very specific pipeline that must be carefully set up and ran sequentially. The `README.md` instructions present in the subdirectories of this repository should be read to achieve a high chance of success at reproducing the results. 
+This work follows a very specific pipeline that must be carefully set up and run sequentially. The `README.md` instructions present in the subdirectories of this repository should be read to achieve a high chance of success at reproducing the results. 
 
 The main scripts run the code in batch, i.e., for every patient case inside a specified input directory.
 
-These tutorials assume that all the previous steps have been followed, the correct evironment is active, and the user is starting out in the main directory of the repository.
+These tutorials assume that all the previous steps have been followed, the correct environment is active, and the user is starting in the main directory of the repository.
 
 ## Contents
 An overview of the contents of each folder is given below:
 
-- [1_dataset_processing](1_dataset_processing/): contains the code to process the datasets and construct a organized directory with the required inputs ready for the biomechanical simulation pipeline.
+- [1_dataset_processing](1_dataset_processing/): contains the code to process the datasets and construct an organized directory with the required inputs ready for the biomechanical simulation pipeline.
   - [1.1_remind](1_dataset_processing/1.1_remind/): specific code for the ReMIND dataset
     - [process_remind_data.py](1_dataset_processing/1.1_remind/process_remind_data.py): finds the tumor segmentations and corresponding image volumes for each case of ReMIND, converts DICOM files to NIfTI and NRRD, predicts a brain segmentation using [SynthSeg](https://github.com/BBillot/SynthSeg), and saves it in an organized output structure.
     - [edit_remind_masks.py](1_dataset_processing/1.1_remind/edit_remind_masks.py): manipulates and edits tumor and brain segmentations to generate a brain surface model with [3D Slicer](https://www.slicer.org/). Automatically called while running `process_remind_data.py`.
-    - [remind_config.json](1_dataset_processing/1.1_remind/remind_config.json): configuration file required to set up prior to running the scripts in this folder; contains the paths for executables, scripts, and input/output directories.
+    - [remind_config.json](1_dataset_processing/1.1_remind/remind_config.json): configuration file required to set up before running the scripts in this folder; contains the paths for executables, scripts, and input/output directories.
   - [1.2_upenn](1_dataset_processing/1.2_upenn/): specific code for the UPENN-GBM dataset
     - [process_upenn_data.py](1_dataset_processing/1.2_upenn/process_upenn_data.py): similar to the previous script for ReMIND, but tailored for the UPENN-GBM directory structure and image formats.
     - [edit_upenn_masks.py](1_dataset_processing/1.1_remind/edit_remind_masks.py): similar to the previous script for ReMIND, but tailored for the UPENN-GBM directory structure and image formats.
@@ -146,7 +146,7 @@ An overview of the contents of each folder is given below:
   - [2.1_generate_solver_inputs.py](2_biomechanical_simulations/2.1_generate_solver_inputs.py): runs the pre-simulation sections of the pipeline for all patient cases in the specified input directory to generate the necessary inputs for the [ExplicitSim](https://bitbucket.org/explicitsim/explicitsim/src/master/) solver.
   - [2.2_run_simulations.py](2_biomechanical_simulations/2.2_run_simulations.py): runs the simulation proper, predicting tumor reaction forces and the nodal displacements after tumor resection, outputting the initial and final/displaced integration point coordinates.
   - [MTLED](2_biomechanical_simulations/MTLED/): contains the code for the [ExplicitSim](https://bitbucket.org/explicitsim/explicitsim/src/master/) solver (which uses the [MTLED](https://doi.org/10.1002/cnm.1374) algorithm, thus the folder name) that was altered to include the effects of gravity in the simulations. The inner code of this directory will not be explained here, and it is automatically called while running `2.1_generate_solver_inputs.py` and `2.2_run_simulations.py`.
-  - [simulation_pipeline](2_biomechanical_simulations/simulation_pipeline/): contains the code for the biomechanical framework. Inner scripts automatically called while running `2.1_generate_solver_inputs.py` and `2.2_run_simulations.py`.
+  - [simulation_pipeline](2_biomechanical_simulations/simulation_pipeline/): contains the code for the biomechanical framework. Inner scripts are automatically called while running `2.1_generate_solver_inputs.py` and `2.2_run_simulations.py`.
     - [generate_meshes.py](2_biomechanical_simulations/simulation_pipeline/generate_meshes.py): generates and optimizes 3D and surface meshes from an input brain surface model.
     - [find_gravity_vectors.py](2_biomechanical_simulations/simulation_pipeline/find_gravity_vectors.py): generates gravity vectors representing possible surgical entry directions based on the tumor center and the brain surface.
     - [identify_tumor.py](2_biomechanical_simulations/simulation_pipeline/identify_tumor.py): identifies the nodes in the brain mesh that belong to the tumor, outputting the mesh element indices of the tumor and the coordinates of the tumor boundary nodes.
@@ -154,7 +154,7 @@ An overview of the contents of each folder is given below:
     - [define_skull_boundaries.py](2_biomechanical_simulations/simulation_pipeline/define_skull_boundaries.py): processes the brain mesh volumes by combining them with the skull surface mesh, resulting in an integrated model with skull boundaries and contact node sets representing the skull-brain interface.
     - [generate_integration_points.py](2_biomechanical_simulations/simulation_pipeline/generate_integration_points.py): generates integration points for each element in the brain meshes using the [ExplicitSim](https://bitbucket.org/explicitsim/explicitsim/src/master/) solver.
     - [assign_material_properties.py](2_biomechanical_simulations/simulation_pipeline/assign_material_properties.py): runs the fuzzy classification of the brain image and the assignment of material properties to each integration point.
-    - [compute_tumor_reaction_forces.py](2_biomechanical_simulations/simulation_pipeline/compute_tumor_reaction_forces.py): simulates the tumor reaction forces using the ExplicitSim solver, and calculates the external loadings at the tumor-brain interface based on the simulation output.
+    - [compute_tumor_reaction_forces.py](2_biomechanical_simulations/simulation_pipeline/compute_tumor_reaction_forces.py): simulates the tumor reaction forces using the ExplicitSim solver and calculates the external loadings at the tumor-brain interface based on the simulation output.
     - [compute_nodal_displacements.py](2_biomechanical_simulations/simulation_pipeline/compute_nodal_displacements.py): simulates the nodal displacements after tumor resection and extracts the initial and final integration point coordinates.
     - Additional temporary subdirectories that are only useful while the code is running and will not be explained here.
 - [3_displacement_fields](3_displacement_fields/): contains the code to resample images to an isotropic 1 mm<sup>3</sup> spacing, and calculates a transformation between two sets of coordinates using the [ScatteredTransform](https://github.com/grandwork2/ScatteredTransform) CLI extension of [3D Slicer](https://www.slicer.org/) and the respective displacement field.
@@ -167,3 +167,5 @@ An overview of the contents of each folder is given below:
 
 ## Contact
 Contact at: tiago.assis@alunos.fc.ul.pt
+
+Faculty of Sciences, University of Lisbon
