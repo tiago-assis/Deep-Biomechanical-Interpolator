@@ -12,7 +12,7 @@ meshio
 gmsh
 scikit-image
 scikit-fuzzy
-#
+# from SynthSeg
 absl-py
 astunparse
 cachetools
