@@ -5,7 +5,7 @@ Runs the pre-simulation sections of the pipeline for all patient cases in the sp
 
 ###### \* The source code for [ExplicitSim](https://bitbucket.org/explicitsim/explicitsim/src/master/) used in this project has been altered to include the effects of gravity in the simulations and is not the same as the one found in the original documentation page. The build instructions still apply and should be followed! The correct and altered software code is provided in this repository.
 
-##### This directory includes adapted and optimized code originally authored by the [Intelligent Systems for Medicine Laboratory](https://isml.ecm.uwa.edu.au/ISML/index.php?title=ISML_Main_Page), The University of Western Australia, which was used in the work described in the following main publications: [1](https://doi.org/10.1016/j.media.2019.06.004), [2](http://dx.doi.org/10.1002/cnm.3539), [3](https://doi.org/10.1016/j.compbiomed.2022.105271), [4](http://dx.doi.org/10.1007/s11548-023-02881-7).
+##### This directory includes code adapted and optimized by me but that was originally authored by the [Intelligent Systems for Medicine Laboratory](https://isml.ecm.uwa.edu.au/ISML/index.php?title=ISML_Main_Page), The University of Western Australia, which was used in the work described in the following main publications: [1](https://doi.org/10.1016/j.media.2019.06.004), [2](http://dx.doi.org/10.1002/cnm.3539), [3](https://doi.org/10.1016/j.compbiomed.2022.105271), [4](http://dx.doi.org/10.1007/s11548-023-02881-7).
 
 ## Installation
 Based on the official [documentation](https://bitbucket.org/explicitsim/explicitsim/src/c6109a36474d539e27fefb0bef390d596d7aac51/INSTALL.md).
