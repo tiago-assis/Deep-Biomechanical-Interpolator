@@ -9,7 +9,7 @@ The repository includes all the necessary code and instructions to reproduce the
 
 ##### The [2_biomechanical_simulations](2_biomechanical_simulations/) directory of this repository includes adapted and optimized code originally authored by the [Intelligent Systems for Medicine Laboratory](https://isml.ecm.uwa.edu.au/ISML/index.php?title=ISML_Main_Page), The University of Western Australia, which was used in the work described in the following main publications: [1](https://doi.org/10.1016/j.media.2019.06.004), [2](http://dx.doi.org/10.1002/cnm.3539), [3](https://doi.org/10.1016/j.compbiomed.2022.105271), [4](http://dx.doi.org/10.1007/s11548-023-02881-7).
 
-## Installation - MANDATORY READING
+## Installation
 The code was mostly tested with [Python 3.10](https://www.python.org/downloads/release/python-31011/) in an [Ubuntu 22.04](https://releases.ubuntu.com/jammy/) system (either natively or through [WSL](https://learn.microsoft.com/en-us/windows/wsl/)), thus this is the recommended environment to use when running any code in this repository.
 
 This project utilizes very different codebases, including [SynthSeg](https://github.com/BBillot/SynthSeg), [ExplicitSim](https://bitbucket.org/explicitsim/explicitsim/src/c6109a36474d539e27fefb0bef390d596d7aac51/INSTALL.md), and [3DSIFT-Rank](https://github.com/3dsift-rank/3DSIFT-Rank/tree/Appearance%2BGeometry). Thus, **any errors during installation should first be debugged by reading the main documentation and/or repositories of each of these software**.
@@ -26,8 +26,8 @@ This repository utilizes the ReMIND and UPENN-GBM data as is; thus, it is expect
 
 ### 1.1. ReMIND directory structures
 Images and segmentations in DICOM format:
-<pre>
-<code>data/
+```bash
+data/
 |-- ReMIND/
 |   |-- manifest-1746853315606/
 |   |   |-- ReMIND/ # you will need the path to this directory!
@@ -39,11 +39,11 @@ Images and segmentations in DICOM format:
 |   |   |   |   |-- 12-25-1982-NA-Preop-*/...
 |   |   |   |-- ...
 |   |   |-- metadata.csv
-</code></pre>
+```
 
 Segmentations in NRRD format:
-<pre>
-<code>data/
+```bash
+data/
 |-- ReMIND
 |   |-- ReMIND_NRRD_Seg_Sep_2023/ # you will need the path to this directory!
 |   |   |-- ReMIND-001/
@@ -51,11 +51,11 @@ Segmentations in NRRD format:
 |   |   |-- ReMIND-002/
 |   |   |   |-- ReMIND-002-*.nrrd
 |   |   |-- ...
-</code></pre>
+```
 
 ### 1.2. UPENN-GBM directory structure
-<pre>
-<code>data/
+```bash
+data/
 |-- UPENN-GBM/
 |   |-- NIfTI-files/
 |   |   |-- automated_segm/ # you will need the path to this directory!
@@ -84,7 +84,7 @@ Segmentations in NRRD format:
 |   |   |   |   |-- UPENN-GBM-00002_11_FLAIR_unstripped.nii.gz
 |   |   |   |   |-- UPENN-GBM-00002_11_T1_unstripped.nii.gz
 |   |   |   |   |-- ...
-</code></pre>
+```
 
 ### 2. Set up [3D Slicer](https://www.slicer.org/) with the required extension:
 This work requires 3D Slicer (a free, open-source image computing platform) for some tasks, including the manipulation of segmentation and image volumes, the generation of surface models, and the computation of transforms by a multi-level BSpline interpolation algorithm ([ScatteredTransform](https://github.com/grandwork2/ScatteredTransform)).
@@ -95,7 +95,7 @@ sudo apt update && sudo apt install git build-essential \
   cmake cmake-curses-gui cmake-qt-gui \
   libqt5x11extras5-dev qtmultimedia5-dev libqt5svg5-dev qtwebengine5-dev libqt5xmlpatterns5-dev qttools5-dev qtbase5-private-dev qtbase5-dev qt5-qmake
 ```
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**2.2.** Build 3D Slicer from source by following the instructions from [here](https://slicer.readthedocs.io/en/latest/developer_guide/build_instructions/linux.html#checkout-slicer-source-files) on. This may take up to several hours.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**2.2.** Build 3D Slicer from source by following the instructions from [here](https://slicer.readthedocs.io/en/latest/developer_guide/build_instructions/linux.html#checkout-slicer-source-files). This may take up to several hours.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**2.3.** Clone the ScatteredTransform extension repository:
 ```
