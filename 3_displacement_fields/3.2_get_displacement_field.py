@@ -115,7 +115,7 @@ def main(input_path: str, tf_cli_path: str, nifti: bool = False) -> None:
     Args:
         input_path (str): Path to a directory containing case folders with simulation subfolders where the coordinate files exist.
         nifti (bool, optional): If True, also saves the displacement field in NIfTI format. Defaults to False.
-        tf_cli_path (str, optional): Path to the ScatteredTransform CLI binary. Defaults to "./ScatteredTransform-debug/lib/Slicer-5.9/cli-modules/ScatteredTransform".
+        tf_cli_path (str, optional): Path to the ScatteredTransform CLI binary.
     """
     intputs = natsorted(os.listdir(input_path))
     for case in tqdm(intputs):
