@@ -1,0 +1,7 @@
+{
+    "python_path": "/home/tassis/Thesis_test/TiagoThesisWork/.tiagoenv/bin/python3",
+    "slicer_path": "/home/tassis/Thesis_test/Slicer-SuperBuild-Debug/Slicer-build/Slicer",
+    "remind_path": "/home/tassis/Thesis_test/data/ReMIND/manifest-1746853315606/ReMIND/",
+    "tumor_seg_path": "/home/tassis/Thesis_test/data/ReMIND/ReMIND_NRRD_Seg_Sep_2023/",
+    "output_simulation_path": "/home/tassis/Thesis_test/TiagoThesisWork/outputs/"
+}

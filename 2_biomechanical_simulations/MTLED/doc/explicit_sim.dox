@@ -1,0 +1,17 @@
+/*!
+ * \mainpage ExplicitSim documentation
+ * \version 0.1 (experimental)
+ * \section intro_sec Introduction
+ *
+ * ExplicitSim is a software for solving PDEs using meshfree explicit methods.
+ *
+ * \section Dependencies
+ *
+ * Before compiling ExplicitSim, make sure that the following libraries are available in your Operating System:
+ *  - CMake (https://cmake.org/ - version 3.1 or higher)
+ *  - CGAL - The Computational Geometry Algorithms Library (https://www.cgal.org/ - version 4.9 or higher)
+ *  - Eigen3 (http://eigen.tuxfamily.org/index.php?title=Main_Page - version 3.3.4 or higher)
+ *  - Boost (http://www.boost.org/ - version 1.62.0 or higher)
+ *  - TinyXML-2 (http://www.grinninglizard.com/tinyxml2/ - version 5.0.1 or higher)
+ *
+ */

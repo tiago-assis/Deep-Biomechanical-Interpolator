@@ -1,0 +1,11 @@
+{
+    "python_path": "/home/tassis/Thesis_test/TiagoThesisWork/.tiagoenv/bin/python3",
+    "slicer_path": "/home/tassis/Thesis_test/Slicer-SuperBuild-Debug/Slicer-build/Slicer",
+    "upenn_path": "/home/tassis/Thesis_test/data/UPENN-GBM/NIfTI-files/images_structural_unstripped/",
+    "tumor_segs_paths": 
+    {
+        "tumor_segs_manual" : "/home/tassis/Thesis_test/data/UPENN-GBM/NIfTI-files/images_segm/", 
+        "tumor_segs_auto": "/home/tassis/Thesis_test/data/UPENN-GBM/NIfTI-files/automated_segm/"
+    },
+    "output_simulation_path": "/home/tassis/Thesis_test/TiagoThesisWork/outputs/"
+}
