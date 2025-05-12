@@ -45,9 +45,11 @@ When no `--nrrd` or `--nifti` flags are provided, both imaging formats are resam
 ---
 
 ### 2. Get extra imaging modalities
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**2.1.** For the **ReMIND dataset ONLY**, preoperative T1ce (T1_postcontrast) (or T2 when T1ce was not available) were rigidly registered to the image (now with a new spacing) used for the biomechanical modeling in previous steps (the resampled .nrrd image in each case folder) using the [BRAINSFit](https://doi.org/10.54294/hmb052) algorithm present in the [General Registration (BRAINS)](https://slicer.readthedocs.io/en/latest/user_guide/modules/brainsfit.html) extension of 3D Slicer, and saved as NIfTI images to the same case folder.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**2.1.** For the **ReMIND dataset ONLY**, preoperative T1ce (T1_postcontrast) (or T2 when T1ce was not available) were rigidly registered to the image (now with a new spacing) used for the biomechanical modeling in previous steps (the resampled .nrrd image in each case folder) using the [BRAINSFit](https://doi.org/10.54294/hmb052) algorithm* present in the [General Registration (BRAINS)](https://slicer.readthedocs.io/en/latest/user_guide/modules/brainsfit.html) extension of 3D Slicer, and saved as NIfTI images to the same case folder.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**2.2.** For the **UPENN-GBM dataset**, the T1ce (T1Gd) images were simply **copied** over from the dataset directory to the data directory of this work, as all imaging modalities are natively coregistered to the same template.
+###### \* Any other algorithm/tool could be used for the rigid registration step.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**2.2.** For the **UPENN-GBM dataset**, the T1ce (T1GD) images were simply **copied** over from the dataset directory to the data directory of this work, as all imaging modalities are natively coregistered to the same template.
 
 
 ### 3. Computing transforms and generating the displacement fields
