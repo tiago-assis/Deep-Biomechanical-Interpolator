@@ -9,6 +9,10 @@ The repository includes all the necessary code and instructions to reproduce the
 
 ##### The [2_biomechanical_simulations](2_biomechanical_simulations/) directory of this repository includes code adapted and optimized by me but that was originally authored by the [Intelligent Systems for Medicine Laboratory](https://isml.ecm.uwa.edu.au/ISML/index.php?title=ISML_Main_Page), The University of Western Australia, which was used in the work described in the following main publications: [1](https://doi.org/10.1016/j.media.2019.06.004), [2](http://dx.doi.org/10.1002/cnm.3539), [3](https://doi.org/10.1016/j.compbiomed.2022.105271), [4](http://dx.doi.org/10.1007/s11548-023-02881-7).
 
+<p align="center"><img src="https://github.com/tiago-assis/TiagoThesisWork/blob/main/predicted_shift_examples.png" width="500" height="350"></p>
+
+**Fig 1.** Examples of predicted brain shift by the biomechanical model for two patients, with overlapping contours of the preoperative (green), intraoperative (orange), and predicted (yellow) brain volumes.
+
 ## Installation
 The code was mostly tested with [Python 3.10](https://www.python.org/downloads/release/python-31011/) in an [Ubuntu 22.04](https://releases.ubuntu.com/jammy/) system (either natively or through [WSL](https://learn.microsoft.com/en-us/windows/wsl/)), thus this is the recommended environment to use when running any code in this repository.
 
