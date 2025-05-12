@@ -1,5 +1,5 @@
 # Physics-Guided Deep Learning for Sparse Data-Driven Brain Shift Registration
-###### **WORK IN PROGRESS...**
+###### **WORK IN PROGRESS... (the structure will change throughout the project to maintain each main section contained and well organized)**
 
 This repository contains the implementation of the work done throughout my MSc thesis. 
 
