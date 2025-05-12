@@ -118,7 +118,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Resample images (NRRD or NIfTI) to any provided voxel spacing in batch.")
     parser.add_argument("input_path", type=str, help="Path to the input directory containing case folders with images.")
     parser.add_argument("--spacing", "-s", type=float, nargs=3, default=[1.0, 1.0, 1.0], help="Desired spacing for the output image (default: [1.0 1.0 1.0]).")
-    parser.add_argument("--interpolator", "-i", type=str, default="bspline", choices=["linear", "nearest", "bspline"], help="Interpolation method to use (default: bspline).")
+    parser.add_argument("--interpolator", "-i", type=str, default="linear", choices=["linear", "nearest", "bspline"], help="Interpolation method to use (default: linear).")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enables verbose output.")
     parser.add_argument("--nifti", "--nii", action="store_true", help="Indicates to only resample NIfTI images.")
     parser.add_argument("--nrrd", action="store_true", help="Indicates to only resample NRRD images.")
@@ -140,4 +140,7 @@ if __name__ == "__main__":
     elif args.interpolator == "bspline":
         interpolator = sitk.sitkBSpline
 
+    print("Starting resampling process with the following parameters:")
+    print(f"Spacing: {args.spacing}")
+    print(f"Interpolator: {args.interpolator}")
     main(args.input_path, args.spacing, interpolator, args.verbose, args.nifti, args.nrrd, args.remind)
