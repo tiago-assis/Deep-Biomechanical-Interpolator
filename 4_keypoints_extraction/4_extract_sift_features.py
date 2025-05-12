@@ -25,17 +25,12 @@ def main(input_path: str, world: bool = False, sift_path: str = "./3DSIFT-Rank/b
         sift_path (str, optional): Path to the SIFT feature extraction binary. Defaults to "./3DSIFT-Rank/build/featExtract/featExtract".
     """
     for case in tqdm(natsorted(os.listdir(input_path))):
-        case_num = case.split("-")[-1]
-        if case.startswith("UPENN"):
-            case_num = case_num[:-3]
-
-        case_path = os.path.join(input_path, case)
-
         if world:
             tqdm.write(f"Generating keypoints for case '{case}' (using world space)...")
         else:
             tqdm.write(f"Generating keypoints for case '{case}' (using voxel space)...")
 
+        case_path = os.path.join(input_path, case)
         # Search for the image files in the case directory
         # First look for T1GD from UPENN-GBM, then T1_postcontrast from ReMIND, then T2 from both datasets, 
         # and finally any other NIfTI file available in the case directory.
@@ -50,12 +45,15 @@ def main(input_path: str, world: bool = False, sift_path: str = "./3DSIFT-Rank/b
             if image:
                 image = image[0]
                 break
-        image_modality = os.path.split(image)[1]
-        modality = "T1GD" if "T1GD" in image_modality else ("T2" if "T2" in image_modality else "T1_postcontrast")
+        image_basename = os.path.basename(image)
+        if case.startswith("ReMIND"):
+            filename = "_".join(image_basename.split("_")[2:])[:-7]
+        else:
+            filename = image_basename.split(".")[0]
 
         out_dir = os.path.join(case_path, "keypoints")
         os.makedirs(out_dir, exist_ok=True)
-        out = os.path.join(out_dir, f"{modality}_{case_num}{'_w' if world else ''}.key")
+        out = os.path.join(out_dir, f"{filename}{'_w' if world else ''}.key")
         if os.path.exists(out):
             tqdm.write(f"\tKeypoints have already been saved to '{out}'. Skipping.\n")
             continue
