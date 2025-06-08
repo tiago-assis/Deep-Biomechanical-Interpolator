@@ -66,7 +66,7 @@ class MetricTracker():
     def print_running(self):
         running = self.get_metric_avg(metric_type='running')
         print(f"{self.mode_dict[self.mode]} Running Metrics:")
-        print(f"Max Absolute Error: {self.max_error}")
+        print(f"Max Absolute Error: {self.max_error:.4f}")
         for k,v in running.items():
             print(f"{k}: {v:.4f}")
         print("\n")

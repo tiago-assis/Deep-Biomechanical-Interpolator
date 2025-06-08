@@ -82,11 +82,8 @@ def train(train_loader,
                 'Regularizer (masked)': Jacobian_det(torch.where(upenn_edema_seg, pred_ddf, 0.0), tumor_seg).item() * reg_w if jdet else Hessian_penalty(torch.where(upenn_edema_seg, pred_ddf, 0.0)).item() * reg_w,
                 'Total Loss': total_loss.item()
             }
-        max_error = torch.round(torch.norm(torch.where(brain_seg, pred_ddf, 0.0) - torch.where(brain_seg, gt_ddf, 0.0), p=1, dim=1).max(), decimals=4)
-        metric_tracker.update(max_error, **metrics)
-        
-        ########
-        metric_tracker.print_running()
+        max_error = torch.norm(torch.where(brain_seg, pred_ddf, 0.0) - torch.where(brain_seg, gt_ddf, 0.0), p=1, dim=1).max()
+        metric_tracker.update(max_error.item(), **metrics)
 
         if i % save_metrics_every == save_metrics_every - 1:
             metric_tracker.save_metrics(writer, epoch * len(train_loader) + i)
@@ -156,44 +153,42 @@ def evaluate(val_loader,
             total_loss = mse + lncc + reg
 
             if lncc_loss is not None:
-                print(lncc_loss)
                 metrics = {
-                    'Initial MSE': mse_loss(torch.where(brain_seg, init_ddf, 0.0), torch.where(brain_seg, gt_ddf, 0.0)).item(),
-                    'Initial MSE (masked)': mse_loss(torch.where(upenn_edema_seg, init_ddf, 0.0), torch.where(upenn_edema_seg, gt_ddf, 0.0)).item(),
-                    'Initial LNCC': lncc_loss(warp_tensor(img, init_ddf), warp_tensor(img, gt_ddf)).item(),
+                    'Initial MSE': mse_loss(torch.where(brain_seg, init_ddf, 0.0), torch.where(brain_seg, gt_ddf, 0.0)).item() * mse_w,
+                    'Initial MSE (masked)': mse_loss(torch.where(upenn_edema_seg, init_ddf, 0.0), torch.where(upenn_edema_seg, gt_ddf, 0.0)).item() * mse_w,
+                    'Initial LNCC': lncc_loss(warp_tensor(img, init_ddf), warp_tensor(img, gt_ddf)).item() * lncc_w,
                     'Prediction MSE': mse.item(),
-                    'Prediction MSE (masked)': mse_loss(torch.where(upenn_edema_seg, pred_ddf, 0.0), torch.where(upenn_edema_seg, gt_ddf, 0.0)).item(),
+                    'Prediction MSE (masked)': mse_loss(torch.where(upenn_edema_seg, pred_ddf, 0.0), torch.where(upenn_edema_seg, gt_ddf, 0.0)).item() * mse_w,
                     'Prediction LNCC': lncc.item(),
                     'Regularizer': reg.item(),
-                    'Regularizer (masked)': Jacobian_det(torch.where(upenn_edema_seg, pred_ddf, 0.0), tumor_seg).item() if jdet else Hessian_penalty(torch.where(upenn_edema_seg, pred_ddf, 0.0)).item(),
+                    'Regularizer (masked)': Jacobian_det(torch.where(upenn_edema_seg, pred_ddf, 0.0), tumor_seg).item() * reg_w if jdet else Hessian_penalty(torch.where(upenn_edema_seg, pred_ddf, 0.0)).item() * reg_w,
                     'Total Loss': total_loss.item()
                 }
             else:
                 metrics = {
-                    'Initial MSE': mse_loss(torch.where(brain_seg, init_ddf, 0.0), torch.where(brain_seg, gt_ddf, 0.0)).item(),
-                    'Initial MSE (masked)': mse_loss(torch.where(upenn_edema_seg, init_ddf, 0.0), torch.where(upenn_edema_seg, gt_ddf, 0.0)).item(),
+                    'Initial MSE': mse_loss(torch.where(brain_seg, init_ddf, 0.0), torch.where(brain_seg, gt_ddf, 0.0)).item() * mse_w,
+                    'Initial MSE (masked)': mse_loss(torch.where(upenn_edema_seg, init_ddf, 0.0), torch.where(upenn_edema_seg, gt_ddf, 0.0)).item() * mse_w,
                     'Prediction MSE': mse.item(),
-                    'Prediction MSE (masked)': mse_loss(torch.where(upenn_edema_seg, pred_ddf, 0.0), torch.where(upenn_edema_seg, gt_ddf, 0.0)).item(),
+                    'Prediction MSE (masked)': mse_loss(torch.where(upenn_edema_seg, pred_ddf, 0.0), torch.where(upenn_edema_seg, gt_ddf, 0.0)).item() * mse_w,
                     'Regularizer': reg.item(),
-                    'Regularizer (masked)': Jacobian_det(torch.where(upenn_edema_seg, pred_ddf, 0.0), tumor_seg).item() if jdet else Hessian_penalty(torch.where(upenn_edema_seg, pred_ddf, 0.0)).item(),
+                    'Regularizer (masked)': Jacobian_det(torch.where(upenn_edema_seg, pred_ddf, 0.0), tumor_seg).item() * reg_w if jdet else Hessian_penalty(torch.where(upenn_edema_seg, pred_ddf, 0.0)).item() * reg_w,
                     'Total Loss': total_loss.item()
                 }
-                max_error = torch.norm(torch.where(brain_seg, pred_ddf, 0.0) - torch.where(brain_seg, gt_ddf, 0.0), p=1, dim=1).max()
-                metric_tracker.update(max_error, **metrics)
+            max_error = torch.norm(torch.where(brain_seg, pred_ddf, 0.0) - torch.where(brain_seg, gt_ddf, 0.0), p=1, dim=1).max()
+            metric_tracker.update(max_error.item(), **metrics)
 
-                if i % save_metrics_every == save_metrics_every - 1:
-                    metric_tracker.save_metrics(writer, epoch * len(val_loader) + i)
-                    metric_tracker.reset_running()
-
-                    plot_data = {
-                        "MRI Scan": img,
-                        "Pred Disp Field": pred_ddf,
-                        "GT Disp Field (Sim)": gt_ddf,
-                        "Init Disp Field (Interp)": init_ddf,
-                        "Brain Mask": brain_seg,
-                        "Tumor Mask": tumor_seg,
-                        "Tumor+Edema Mask": upenn_edema_seg
-                    }
-                    save_plot(nrows=2, ncols=4, writer=writer, step=epoch * len(val_loader) + i, local_save=local_plot_save, **plot_data)
+            if i % save_metrics_every == save_metrics_every - 1:
+                metric_tracker.save_metrics(writer, epoch * len(val_loader) + i)
+                metric_tracker.reset_running()
+                plot_data = {
+                    "MRI Scan": img,
+                    "Pred Disp Field": pred_ddf,
+                    "GT Disp Field (Sim)": gt_ddf,
+                    "Init Disp Field (Interp)": init_ddf,
+                    "Brain Mask": brain_seg,
+                    "Tumor Mask": tumor_seg,
+                    "Tumor+Edema Mask": upenn_edema_seg
+                }
+                save_plot(nrows=2, ncols=4, writer=writer, step=epoch * len(val_loader) + i, local_save=local_plot_save, **plot_data)
                 
     metric_tracker.print_epoch()
