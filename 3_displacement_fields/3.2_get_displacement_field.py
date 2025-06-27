@@ -98,7 +98,7 @@ def get_displacement_field(transform_path: str, reference_path: str, output_path
 
     # Convert to NumPy and save as .npz
     disp_array = sitk.GetArrayFromImage(disp_field)  # (D, H, W, 3)
-    disp_array = np.moveaxis(disp_array, -1, 0) # (3, D, H, W) for PyTorch (?)
+    disp_array = np.transpose(disp_array, (3, 2, 1, 0)) # (3, D, H, W) for PyTorch
     np.savez_compressed(output_path, field=disp_array)
 
     # Clean up memory because these transforms can be large
@@ -115,7 +115,7 @@ def main(input_path: str, tf_cli_path: str, nifti: bool = False) -> None:
     Args:
         input_path (str): Path to a directory containing case folders with simulation subfolders where the coordinate files exist.
         nifti (bool, optional): If True, also saves the displacement field in NIfTI format. Defaults to False.
-        tf_cli_path (str, optional): Path to the ScatteredTransform CLI binary.
+        tf_cli_path (str, optional): Path to the ScatteredTransform CLI binary. Defaults to "./ScatteredTransform-debug/lib/Slicer-5.9/cli-modules/ScatteredTransform".
     """
     intputs = natsorted(os.listdir(input_path))
     for case in tqdm(intputs):
@@ -148,7 +148,7 @@ def main(input_path: str, tf_cli_path: str, nifti: bool = False) -> None:
                     reference_path = glob.glob(os.path.join(case_path, f"*T*{case_num}.nrrd"))
 
                 tqdm.write("\tExtracting displacement field...")
-                npz_out_path = os.path.join(sim_path, f"disp_field_{case_num}_{sim}.npz")
+                npz_out_path = os.path.join(sim_path, f"disp_field_{case_num}.npz")
                 if os.path.exists(npz_out_path):
                     tqdm.write(f"\tDisplacement field for this case already exists. Skipping.")
                     continue   
