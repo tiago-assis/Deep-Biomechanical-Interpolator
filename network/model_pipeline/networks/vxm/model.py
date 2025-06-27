@@ -3,10 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions.normal import Normal
 import numpy as np
-from model_pipeline.network.layers import ConvBlock, InitWeights_He
+from .layers import ConvBlock, InitWeights_He
 
 
-class UNet(nn.Module):
+class VoxelMorph(nn.Module):
     """
     A unet architecture. Layer features can be specified directly as a list of encoder and decoder
     features or as a single integer along with a number of unet levels. The default network features
@@ -17,14 +17,15 @@ class UNet(nn.Module):
     """
 
     def __init__(self,
-                 inshape=None,
+                 ndims=3,
                  infeats=None,
                  nb_features=None,
                  nb_levels=None,
                  max_pool=2,
                  feat_mult=1,
                  nb_conv_per_level=1,
-                 half_res=False):
+                 half_res=False,
+                 predict_residual=False):
         """
         Parameters:
             inshape: Input shape. e.g. (192, 192, 192)
@@ -44,18 +45,56 @@ class UNet(nn.Module):
         super().__init__()
 
         # ensure correct dimensionality
-        ndims = len(inshape)
         assert ndims in [1, 2, 3], 'ndims should be one of 1, 2, or 3. found: %d' % ndims
 
         # cache some parameters
         self.half_res = half_res
 
         # default encoder and decoder layer features if nothing provided
+        if isinstance(nb_features, int):
+            nb_features = None
+            
         if nb_features is None:
             nb_features = [
                 [16, 32, 32, 32],             # encoder
                 [32, 32, 32, 32, 32, 16, 16]  # decoder
             ]
+        elif nb_features == [16,32,32]:
+            nb_features = [
+                [16, 32, 32],             # encoder
+                [32, 32, 32, 32, 16, 16]  # decoder
+            ]
+        elif nb_features == [32,64,64]:
+            nb_features = [
+                [32, 64, 64],             # encoder
+                [64, 64, 64, 64, 32, 32]  # decoder
+            ]
+        elif nb_features == [32,64,64,64]:
+            nb_features = [
+                [32, 64, 64, 64],             # encoder
+                [64, 64, 64, 64, 64, 32, 32]  # decoder
+            ]
+        elif nb_features == [32,64,128,256]:
+            nb_features = [
+                [32, 64, 128, 256],             # encoder
+                [512, 256, 128, 64, 32, 16, 16]  # decoder
+            ]
+        elif nb_features == [32,64,128]:
+            nb_features = [
+                [32, 64, 128],             # encoder
+                [256, 128, 64, 32, 16, 16]  # decoder
+            ]
+        elif nb_features == [64,128,256,512]:
+            nb_features = [
+                [64,128,256,512],             # encoder
+                [1024, 512, 256, 128, 64, 32, 32]  # decoder
+            ]
+        elif nb_features == [64,128,256]:
+            nb_features = [
+                [64,128,256],             # encoder
+                [512, 256, 128, 64, 32, 32]  # decoder
+            ]
+
 
         # build feature list automatically
         if isinstance(nb_features, int):
@@ -122,7 +161,13 @@ class UNet(nn.Module):
         self.final.weight = nn.Parameter(Normal(0, 1e-5).sample(self.final.weight.shape))
         self.final.bias = nn.Parameter(torch.zeros(self.final.bias.shape))
 
-    def forward(self, x, init_ddf):
+        self.predict_residual = predict_residual
+
+    def forward(self, x):
+        # slice initial ddf to learn residual
+        if self.predict_residual:
+            init_ddf = x[:,0:3].clone() 
+
         # encoder forward pass
         x_history = [x]
         for level, convs in enumerate(self.encoder):
@@ -144,4 +189,8 @@ class UNet(nn.Module):
         for conv in self.remaining:
             x = conv(x)
 
-        return init_ddf + self.final(x)
+        if self.predict_residual:
+            return init_ddf + self.final(x)
+        else:
+            return self.final(x)
+    

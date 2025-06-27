@@ -24,15 +24,13 @@ class MetricTracker():
         self.max_error = -np.inf
 
     def update(self, max_error, **metrics_kwargs):
-        self.update_max_error(max_error)
+        self.update_max_error(max_error.detach().cpu().item())
         for metric, value in metrics_kwargs.items():
             if metric in self.metrics:
-                self.running_totals[metric] += value
+                self.running_totals[metric] += value.detach().cpu().item()
                 self.running_counts[metric] += 1
-                self.epoch_totals[metric] += value
+                self.epoch_totals[metric] += value.detach().cpu().item()
                 self.epoch_counts[metric] += 1
-            else:
-                raise ValueError(f"Unknown metric: {metric}")
 
     def update_max_error(self, error):
         if error > self.max_error:
@@ -58,7 +56,7 @@ class MetricTracker():
     def print_epoch(self):
         epoch = self.get_metric_avg(metric_type="epoch")
         print(f"{self.mode_dict[self.mode]} Epoch Metrics:")
-        print(f"Max Absolute Error: {self.max_error}")
+        print(f"Max Euclidean Distance: {self.max_error:.4f}")
         for k,v in epoch.items():
             print(f"{k}: {v:.4f}")
         print("\n")
@@ -66,14 +64,15 @@ class MetricTracker():
     def print_running(self):
         running = self.get_metric_avg(metric_type='running')
         print(f"{self.mode_dict[self.mode]} Running Metrics:")
-        print(f"Max Absolute Error: {self.max_error:.4f}")
+        print(f"Max Euclidean Distance: {self.max_error:.4f}")
         for k,v in running.items():
             print(f"{k}: {v:.4f}")
         print("\n")
 
     def save_metrics(self, writer, step):
-        writer.add_scalar(f"{self.mode}/Max Absolute Error", self.max_error, step)
+        writer.add_scalar(f"{self.mode}/Max Euclidean Distance", self.max_error, step)
         running_avg = self.get_metric_avg()
         for metric, value in running_avg.items():
             writer.add_scalar(f"{self.mode}/{metric}", value, step)
         writer.flush()
+        
