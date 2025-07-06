@@ -7,7 +7,7 @@ from .buildingblocks import (
     ResNetBlockSE,
     create_decoders,
     create_encoders,
-    InitWeights_He
+    InitWeightsHe
 )
 from .utils import get_class, number_of_features_per_level
 
@@ -120,15 +120,16 @@ class AbstractUNet(nn.Module):
 
         self.predict_residual = predict_residual
 
+        # set initialization weights
         if initialization:
             nonlin_map = {
-                'r': 'relu',
-                'e': 'elu',
-                'l': 'leaky_relu'
+                'r': {'nonlinearity': 'relu'},
+                'e': {'nonlinearity': 'elu'},
+                'l': {'nonlinearity': 'leaky_relu', 'neg_slope': 1e-2}
             }
             for c in 'rel':
                 if c in layer_order:
-                    init = InitWeights_He(nonlin_map[c])
+                    init = InitWeightsHe(**nonlin_map[c])
                     self.apply(init)
                     break
 

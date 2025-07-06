@@ -646,14 +646,14 @@ class NoUpsampling(AbstractUpsampling):
         return x
     
 
-class InitWeights_He(object):
+class InitWeightsHe(object):
     def __init__(self, nonlinearity='leaky_relu', neg_slope=1e-2):
         self.nonlinearity = nonlinearity
         self.neg_slope = neg_slope
 
     def __call__(self, module):
         if isinstance(module, nn.Conv3d) or isinstance(module, nn.Conv2d) or isinstance(module, nn.ConvTranspose2d) or isinstance(module, nn.ConvTranspose3d):
-            module.weight = nn.init.kaiming_normal_(module.weight, nonlinearity=self.nonlinearity, a=self.neg_slope)
+            nn.init.kaiming_normal_(module.weight, nonlinearity=self.nonlinearity, a=self.neg_slope)
             if module.bias is not None:
-                module.bias = nn.init.constant_(module.bias, 0)
+                nn.init.constant_(module.bias, 0)
                 
