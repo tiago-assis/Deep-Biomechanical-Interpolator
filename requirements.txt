@@ -1,0 +1,14 @@
+tqdm
+numpy
+scipy
+nibabel
+pynrrd
+sickit-learn
+natsort
+matplotlib
+h5py
+torch
+torchvision
+torchaudio
+tensorboard
+monai
