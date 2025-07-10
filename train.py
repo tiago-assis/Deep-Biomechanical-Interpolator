@@ -55,9 +55,9 @@ def set_configs() -> argparse.Namespace:
     parser.add_argument('--reg_w', type=float, default=1.0, help='Weight for the regularization term.')
     parser.add_argument('--extra_eval', action='store_true', help='Includes additional metric tracking, including TRE, Dice, and HD95.')
     parser.add_argument('--augment', action='store_true', help='Whether to enable or disable imagine intensity augmentations.')
-    parser.add_argument('--evaluate_every', type=int, default=4, help='Frequency of validation during training. Sets the number of epochs after which the model is evaluated on the validation or testing sets.')
-    parser.add_argument('--train_save_every', type=int, default=20, help='Frequency of saving metrics during training. Sets the number of batches after which the metrics are saved. A value of -1 can be set so no data is saved during training.')
-    parser.add_argument('--val_save_every', type=int, default=4, help='Frequency of saving metrics during validation and testing. Sets the number of batches after which the metrics are saved.')
+    parser.add_argument('--evaluate_every', type=int, default=1, help='Frequency of validation during training. Sets the number of epochs after which the model is evaluated on the validation or testing sets.')
+    parser.add_argument('--train_save_every', type=int, default=121, help='Frequency of saving metrics during training. Sets the number of batches after which the metrics are saved. A value of -1 can be set so no data is saved during training.')
+    #parser.add_argument('--val_save_every', type=int, default=12, help='Frequency of saving metrics during validation and testing. Sets the number of batches after which the metrics are saved.')
     parser.add_argument('--local_plot_save', action='store_true', help='Whether to save training plots locally.')
     parser.add_argument('--save_warps', action='store_true', help='Whether to save warped versions of the images or not.')
     parser.add_argument('--metrics_dir', type=str, default='metric_saves', help='Path to save metrics and plots.')
@@ -71,6 +71,9 @@ def set_configs() -> argparse.Namespace:
 
     args = parser.parse_args()
 
+    if args.batch_size > 1:
+        raise NotImplementedError("Batch sizes greater than 1 are not yet supported.")
+    
     if args.configs is not None:
         with open(args.configs, 'r') as f:
             config_args = json.load(f)
@@ -96,15 +99,12 @@ def set_configs() -> argparse.Namespace:
     assert args.lncc_window > 0, "LNCC window size must be a positive integer."
     assert args.evaluate_every > 0, "Evaluation frequency must be a positive integer."
     #assert args.train_save_every > 0, "Training metrics save frequency must be a positive integer."
-    assert args.val_save_every > 0, "Validation metrics save frequency must be a positive integer."
+    #assert args.val_save_every > 0, "Validation metrics save frequency must be a positive integer."
     assert args.size[0] > 0 and args.size[1] > 0 and args.size[2] > 0, "Input size dimensions must be positive integers."
     assert args.interp in ['tps', 'linear'], f"Interpolation method must be either 'tps' or 'linear'; got '{args.interp}'"
     assert args.min_kpts >= 5, "Minimum number of sampled keypoints must be >= 5."
     assert args.max_kpts >= args.min_kpts, "The number of maximum sampled keypoints must be an integer >= the number of minimum sampled keypoints."
-    assert args.seed >= 0 or (args.seed is None), f"Deterministic seed needs to be a non-negative integer or None; got {args.seed}"
-
-    if args.batch_size > 1:
-        raise NotImplementedError("Batch sizes greater than 1 are not yet supported.")
+    assert (args.seed is None) or args.seed >= 0, f"Deterministic seed needs to be a non-negative integer or None; got {args.seed}"
 
     return args
 
@@ -141,6 +141,9 @@ if __name__ == "__main__":
         shuffle=True,
         dataloader_generator=torch.Generator().manual_seed(args.seed) if args.seed is not None else None
     )
+
+    if args.train_save_every > len(train_dataloader):
+        args.train_save_everu = len(train_dataloader)
 
     metrics = [
         'Total Loss',
@@ -244,7 +247,8 @@ if __name__ == "__main__":
     model = model.to(args.device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     #scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs, eta_min=args.lr/100)
-    #scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, threshold=0.001, threshold_mode='abs', cooldown=0, min_lr=1e-6)[source]
+    #scheduler = optim.lr_scheduler.PolynomialLR(optimizer, total_iters=args.epochs, power=0.4)
+    #scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, threshold=0.001, threshold_mode='abs', cooldown=0, min_lr=1e-6)
 
     if args.lncc:
         lncc_loss = LNCC(args.lncc_window).to(args.device)
@@ -303,7 +307,8 @@ if __name__ == "__main__":
                 lncc_w=args.lncc_w, 
                 reg_penalty=reg_penalty, 
                 reg_w=args.reg_w,
-                save_metrics_every=args.val_save_every, 
+                extra_eval=args.extra_eval,
+                save_metrics_every=len(val_dataloader), 
                 local_plot_save=args.local_plot_save, 
                 save_warps=args.save_warps, 
                 device=args.device
@@ -329,7 +334,8 @@ if __name__ == "__main__":
             lncc_w=args.lncc_w, 
             reg_penalty=reg_penalty, 
             reg_w=args.reg_w,
-            save_metrics_every=args.val_save_every, 
+            extra_eval=args.extra_eval,
+            save_metrics_every=len(val_dataloader), 
             local_plot_save=args.local_plot_save, 
             save_warps=args.save_warps, 
             device=args.device
@@ -357,7 +363,8 @@ if __name__ == "__main__":
         lncc_w=args.lncc_w, 
         reg_penalty=reg_penalty, 
         reg_w=args.reg_w,
-        save_metrics_every=args.val_save_every, 
+        extra_eval=args.extra_eval,
+        save_metrics_every=len(test_dataloader), 
         local_plot_save=args.local_plot_save, 
         save_warps=args.save_warps,
         extra_eval=args.extra_eval,
