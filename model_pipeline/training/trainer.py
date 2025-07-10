@@ -11,18 +11,20 @@ from model_pipeline.metrics.losses import MaskedMSELoss, tr_error, dice_score, h
 from model_pipeline.utils.utils import warp_tensor, dilate_binary_mask
 
 
-def process_batch(batch: Dict[str, torch.Tensor], 
-                  model: torch.nn.Module, 
-                  mse_w: float = 1.0, 
-                  lncc_loss: Optional[Any] = None, 
-                  lncc_w: float = 1.0, 
-                  reg_penalty: Optional[Any] = None, 
-                  reg_w: float = 1.0, 
-                  save_warps: bool = False, 
-                  extra_eval: bool = False, 
-                  save_metrics_every: int = 20, 
-                  start_time: float = float('nan'), 
-                  device: str = 'cuda') -> Tuple[torch.Tensor, Optional[Dict[str, torch.Tensor]], Optional[Dict[str, torch.Tensor]], Optional[int]]:
+def process_batch(
+        batch: Dict[str, torch.Tensor], 
+        model: torch.nn.Module, 
+        mse_w: float = 1.0, 
+        lncc_loss: Optional[Any] = None, 
+        lncc_w: float = 1.0, 
+        reg_penalty: Optional[Any] = None, 
+        reg_w: float = 1.0, 
+        save_warps: bool = False, 
+        extra_eval: bool = False, 
+        save_metrics_every: int = 20, 
+        start_time: float = float('nan'),
+        device: str = 'cuda'
+        ) -> Tuple[torch.Tensor, Optional[Dict[str, torch.Tensor]], Optional[Dict[str, torch.Tensor]], Optional[int]]:
     """
     Processes a single batch through the model, computes loss components and optional metrics.
 
@@ -159,23 +161,50 @@ def process_batch(batch: Dict[str, torch.Tensor],
     return total_loss, None, None, None
 
 
-def run_trainer(dataloader: DataLoader, 
-                model: torch.nn.Module, 
-                epoch: int, 
-                writer: SummaryWriter, 
-                metric_tracker: MetricTracker, 
-                optimizer: Optional[torch.optim.Optimizer] = None, 
-                mode: str = 'train',
-                mse_w: float = 1.0, 
-                lncc_loss: Optional[Any] = None, 
-                lncc_w: float = 1.0, 
-                reg_penalty: Optional[Any] = None, 
-                reg_w: float = 1.0,
-                save_metrics_every: int = 20, 
-                local_plot_save: bool = False, 
-                save_warps: bool = False, 
-                extra_eval: bool = False, 
-                device: str = 'cuda') -> Optional[float]:
+def run_trainer(
+    dataloader: DataLoader, 
+    model: torch.nn.Module, 
+    epoch: int, 
+    writer: SummaryWriter, 
+    metric_tracker: MetricTracker,
+    optimizer: Optional[torch.optim.Optimizer] = None, 
+    mode: str = 'train',
+    mse_w: float = 1.0, 
+    lncc_loss: Optional[Any] = None, 
+    lncc_w: float = 1.0, 
+    reg_penalty: Optional[Any] = None, 
+    reg_w: float = 1.0,
+    save_metrics_every: int = 20, 
+    local_plot_save: bool = False, 
+    save_warps: bool = False, 
+    extra_eval: bool = False, 
+    device: str = 'cuda'
+) -> Optional[float]:
+    """
+    Runs one full epoch of training or validation.
+
+    Args:
+        dataloader (DataLoader): Input data loader.
+        model (torch.nn.Module): Model to train or evaluate.
+        epoch (int): Current epoch number.
+        writer (SummaryWriter): TensorBoard writer for logging.
+        metric_tracker (Any): Object for tracking and recording metrics.
+        optimizer (Optional[torch.optim.Optimizer]): Optimizer used during training. Ignored in validation.
+        mode (str): Either 'train' or 'val'. Controls behavior and gradients.
+        mse_w (float): Weight for MSE loss component.
+        lncc_loss (Optional[Any]): Optional LNCC loss function.
+        lncc_w (float): Weight for LNCC loss.
+        reg_penalty (Optional[Any]): Optional regularization penalty.
+        reg_w (float): Weight for regularization.
+        save_metrics_every (int): Frequency (in steps) to log and save metrics.
+        local_plot_save (bool): Whether to save local visualizations of outputs.
+        save_warps (bool): Whether to save displacement warps.
+        extra_eval (bool): Whether to compute extra evaluation metrics.
+        device (str): Device to run model on.
+
+    Returns:
+        Optional[float]: Average epoch MSE for validation mode; None for training.
+    """
     is_training = mode.lower() == 'train'
     model.train() if is_training else model.eval()
     metric_tracker.reset_running()
@@ -189,7 +218,7 @@ def run_trainer(dataloader: DataLoader,
         for i, batch in enumerate(tqdm(dataloader, leave=False)):
             total_loss, metrics, plot_data, tumor_z_slice = process_batch(
                 batch, model, mse_w, lncc_loss, lncc_w, reg_penalty, reg_w,
-                save_warps, extra_eval, save_metrics_every, start_time, device
+                save_warps, extra_eval, save_metrics_every, start_time, mode, device
             )
 
             if is_training:
