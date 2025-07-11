@@ -273,7 +273,7 @@ if __name__ == "__main__":
     print(f"Metrics and setup arguments are being saved to: {log_dir}")
     print(f"Model checkpoints are being saved to: {args.save_dir}")
     print(f"\nTraining model...\n")
-    for epoch in tqdm(range(args.epochs)):
+    for epoch in tqdm(range(init_epoch, args.epochs)):
         run_trainer(
             train_dataloader, 
             model, 
