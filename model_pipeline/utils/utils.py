@@ -171,6 +171,6 @@ def load_checkpoint(checkpoint_path: str,
     
     if verbose:
         filename = checkpoint.get('filename')
-        print(f"\nLoaded checkpoint {filename+' ' if filename else ''}from epoch {checkpoint['epoch']} (MSE: {checkpoint['loss']:.4f})")
+        print(f"\nLoaded checkpoint {'\''+filename+'\' ' if filename else ''}from epoch {checkpoint['epoch']} (MSE: {checkpoint['loss']:.4f})")
         
     return checkpoint
