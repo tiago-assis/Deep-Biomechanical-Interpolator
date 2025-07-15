@@ -27,6 +27,7 @@ def set_configs() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(description="Train a model for dense displacement field prediction from MRI scans and sparse displacements.")
     parser.add_argument('--data', type=str, default=None, help='Path to the data directory.')
+    parser.add_argument('--test', action='store_true', help='Whether to run the model on the test set.')
     parser.add_argument('--checkpoint', action='store_true', help="Whether additional checkpoints should be saved during training or not. Checkpoints are automatically saved every evaluation step (see '--evaluate_every').")
     parser.add_argument('--load_model', type=str, default=None, help="Path to load a saved model checkpoint.")
     parser.add_argument('--save_dir', type=str, default='checkpoints', help="Path to save training checkpoints.")
@@ -92,6 +93,7 @@ def set_configs() -> argparse.Namespace:
         args.max_kpts = args.num_kpts
 
     assert args.data is not None, "Data path must be provided."
+    assert not (args.test and args.load_model is None), "If testing, a model checkpoint must be provided."
     assert os.path.exists(args.data) and os.path.isdir(args.data), f"Data path provided is not a valid directory: {args.data}"
     assert args.epochs > 0, "Number of epochs must be a positive integer."
     assert 2 <= len(args.split) <= 3 and 0 < sum(args.split) < 1.0, f"Data split ratios need to be in the format [(train_split, )val_split, test_split] and its sum must be in the interval (0, 1)."
@@ -268,33 +270,61 @@ if __name__ == "__main__":
         checkpoint = load_checkpoint(args.load_model, model, optimizer, verbose=True)
         init_epoch = checkpoint['epoch']
         best_loss = checkpoint['loss']
-    
-    print(f"\nA {args.model} model was selected to train with the {'GPU' if args.device == 'cuda' else 'CPU'}.")
-    print(f"Metrics and setup arguments are being saved to: {log_dir}")
-    print(f"Model checkpoints are being saved to: {args.save_dir}")
-    print(f"\nTraining model...\n")
-    for epoch in tqdm(range(init_epoch, args.epochs)):
-        run_trainer(
-            train_dataloader, 
-            model, 
-            epoch, 
-            writer, 
-            train_metric_tracker, 
-            optimizer=optimizer, 
-            mode='train',
-            mse_w=args.mse_w, 
-            lncc_loss=lncc_loss, 
-            lncc_w=args.lncc_w, 
-            reg_penalty=reg_penalty, 
-            reg_w=args.reg_w,
-            save_metrics_every=args.train_save_every, 
-            local_plot_save=args.local_plot_save, 
-            save_warps=args.save_warps,
-            device=args.device
-        )
 
-        if epoch % args.evaluate_every == args.evaluate_every - 1:
-            print(f"\n\nValidating model...")
+    if not args.test:
+        print(f"\nA {args.model} model was selected to train with the {'GPU' if args.device == 'cuda' else 'CPU'}.")
+        print(f"Metrics and setup arguments are being saved to: {log_dir}")
+        print(f"Model checkpoints are being saved to: {args.save_dir}")
+        print(f"\nTraining model...\n")
+        for epoch in tqdm(range(init_epoch, args.epochs)):
+            run_trainer(
+                train_dataloader, 
+                model, 
+                epoch, 
+                writer, 
+                train_metric_tracker, 
+                optimizer=optimizer, 
+                mode='train',
+                mse_w=args.mse_w, 
+                lncc_loss=lncc_loss, 
+                lncc_w=args.lncc_w, 
+                reg_penalty=reg_penalty, 
+                reg_w=args.reg_w,
+                save_metrics_every=args.train_save_every, 
+                local_plot_save=args.local_plot_save, 
+                save_warps=args.save_warps,
+                device=args.device
+            )
+
+            if epoch % args.evaluate_every == args.evaluate_every - 1:
+                print(f"\n\nValidating model...")
+                loss = run_trainer(
+                    val_dataloader, 
+                    model, 
+                    epoch, 
+                    writer, 
+                    val_metric_tracker, 
+                    mode='val',
+                    mse_w=args.mse_w, 
+                    lncc_loss=lncc_loss, 
+                    lncc_w=args.lncc_w, 
+                    reg_penalty=reg_penalty, 
+                    reg_w=args.reg_w,
+                    extra_eval=args.extra_eval,
+                    save_metrics_every=len(val_dataloader), 
+                    local_plot_save=args.local_plot_save, 
+                    save_warps=args.save_warps, 
+                    device=args.device
+                )
+
+                is_best = loss < best_loss
+                best_loss = loss if is_best else best_loss
+                if is_best or args.checkpoint:
+                    save_checkpoint(model, optimizer, epoch, loss, is_best=is_best, filename=args.run_prefix, save_dir=args.save_dir, additional_info=None)
+
+            #scheduler.step()
+
+        if args.epochs % args.evaluate_every != 0:
             loss = run_trainer(
                 val_dataloader, 
                 model, 
@@ -313,43 +343,16 @@ if __name__ == "__main__":
                 save_warps=args.save_warps, 
                 device=args.device
             )
-
+            
             is_best = loss < best_loss
             best_loss = loss if is_best else best_loss
             if is_best or args.checkpoint:
                 save_checkpoint(model, optimizer, epoch, loss, is_best=is_best, filename=args.run_prefix, save_dir=args.save_dir, additional_info=None)
 
-        #scheduler.step()
-
-    if args.epochs % args.evaluate_every != 0:
-        loss = run_trainer(
-            val_dataloader, 
-            model, 
-            epoch, 
-            writer, 
-            val_metric_tracker, 
-            mode='val',
-            mse_w=args.mse_w, 
-            lncc_loss=lncc_loss, 
-            lncc_w=args.lncc_w, 
-            reg_penalty=reg_penalty, 
-            reg_w=args.reg_w,
-            extra_eval=args.extra_eval,
-            save_metrics_every=len(val_dataloader), 
-            local_plot_save=args.local_plot_save, 
-            save_warps=args.save_warps, 
-            device=args.device
-        )
-        
-        is_best = loss < best_loss
-        best_loss = loss if is_best else best_loss
-        if is_best or args.checkpoint:
-            save_checkpoint(model, optimizer, epoch, loss, is_best=is_best, filename=args.run_prefix, save_dir=args.save_dir, additional_info=None)
-
-    best_model = glob.glob(os.path.join(args.save_dir, "best_checkpoints", f"{args.run_prefix}*"))[0]
-    checkpoint = load_checkpoint(best_model, model, optimizer, verbose=True)
-    init_epoch = checkpoint['epoch']
-    print("\nRunning the best model on the test set...\n")
+        best_model = glob.glob(os.path.join(args.save_dir, "best_checkpoints", f"{args.run_prefix}*"))[0]
+        checkpoint = load_checkpoint(best_model, model, optimizer, verbose=True)
+        init_epoch = checkpoint['epoch']
+        print("\nRunning the best model on the test set...\n")
     
     run_trainer(
         test_dataloader, 
@@ -363,8 +366,7 @@ if __name__ == "__main__":
         lncc_w=args.lncc_w, 
         reg_penalty=reg_penalty, 
         reg_w=args.reg_w,
-        extra_eval=args.extra_eval,
-        save_metrics_every=len(test_dataloader), 
+        save_metrics_every=1, 
         local_plot_save=args.local_plot_save, 
         save_warps=args.save_warps,
         extra_eval=args.extra_eval,
