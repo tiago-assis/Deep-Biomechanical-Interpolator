@@ -218,7 +218,7 @@ def run_trainer(
         for i, batch in enumerate(tqdm(dataloader, leave=False)):
             total_loss, metrics, plot_data, tumor_z_slice = process_batch(
                 batch, model, mse_w, lncc_loss, lncc_w, reg_penalty, reg_w,
-                save_warps, extra_eval, save_metrics_every, start_time, mode, device
+                save_warps, extra_eval, save_metrics_every, start_time, device
             )
 
             if is_training:
