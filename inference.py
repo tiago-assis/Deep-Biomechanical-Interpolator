@@ -57,7 +57,7 @@ if __name__ == "__main__":
     assert args.init_disp is None or args.init_disp.endswith('.h5'), "Initial displacement field must be a .h5 file."
     assert args.kpt_disps is None or args.kpt_disps.endswith('.csv') or args.kpt_disps.endswith('.txt'), "Keypoint displacements must be a CSV text file."
 
-    model_path = "./checkpoints/model_tpslinear_200.pth"
+    model_path = "./checkpoints/model_tpslinear_200.pt"
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model checkpoint file does not exist. Please download it and extract it into the checkpoints folder: [url]")
     checkpoint = torch.load(model_path)
