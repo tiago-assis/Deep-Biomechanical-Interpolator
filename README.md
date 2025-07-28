@@ -52,8 +52,7 @@ cd Deep-Biomechanical-Interpolator
 | natsort | tqdm | Matplotlib |
 
 Python 3.13 was tested. \
-PyTorch 2.7 with CUDA 12.4+ was tested on NVIDIA RTX 4080 16GB and NVIDIA A100 40/80GB. \
-Matplotlib is optional to generate plot data during training.
+PyTorch 2.7 with CUDA 12.4+ was tested on NVIDIA RTX 4080 16GB and NVIDIA A100 40/80GB.
 
  \
 Install dependencies using:
