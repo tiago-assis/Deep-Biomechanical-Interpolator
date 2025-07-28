@@ -28,7 +28,7 @@ The process to train the model was performed as follows:
 
 ## Citation
 
-If you use this work, please cite the original paper.
+If this work is useful to you, please cite the original paper!
 ```
 @inproceedings{
 
