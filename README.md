@@ -55,6 +55,7 @@ Python 3.13 was tested. \
 PyTorch 2.7 with CUDA 12.4+ was tested on NVIDIA RTX 4080 16GB and NVIDIA A100 40/80GB. \
 Matplotlib is optional to generate plot data during training.
 
+ \
 Install dependencies using:
 ```
 pip install -r requirements.txt
@@ -63,6 +64,7 @@ pip install -r requirements.txt
 ## Training
 To reproduce the training done in this work, you will be required to download our custom dataset ![NeuriPhy]() (TBD) that comprises: preoperative MRI data, brain and tumor segmentations, extracted keypoints, and biomechanically simulated deformation fields.
 
+\
 You can then set up the training configuration file and run the following script:
 ```
 python train.py --configs /your/configs.json
@@ -73,6 +75,7 @@ The training script is highly modular, allowing the configuration of several asp
 ## Inference with your own data!
 To run a pre-trained model, please download the weights in ![checkpoints](checkpoints/).
 
+\
 Two approaches can then be taken:
 
 **1.** You have access to an initial displacement field and want to run the model for **displacement field correction** only.
@@ -85,6 +88,7 @@ python inference.py \
   -d cuda \
   -o /path/to/output/corrected/displacement/field.h5
 ```
+
 \
 **2.** You have access to matched keypoints and their respective sparse displacements and want the framework to (1) **interpolate** and then (2) predict a **corrected** dense displacement field.
 - A text file with keypoint coordinates and displacement vectors should be provided.
