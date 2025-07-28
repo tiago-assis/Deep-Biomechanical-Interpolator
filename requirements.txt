@@ -6,9 +6,9 @@ pynrrd
 sickit-learn
 natsort
 matplotlib
-h5py
 torch
 torchvision
 torchaudio
 tensorboard
 monai
+simpleitk
