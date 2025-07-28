@@ -26,5 +26,5 @@ The process is as follows:
 
         - The model is trained with a voxel-wise error loss and a Jacobian-based regularization loss to encourage smooth deformations.
 
-![Overview of the proposed framework](imgs/framework_pipeline.pdf)
+![Overview of the proposed framework](imgs/framework_pipeline.png)
 Fig 1. Overview of the proposed framework.
