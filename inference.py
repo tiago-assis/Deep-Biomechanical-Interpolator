@@ -1,4 +1,5 @@
 import argparse
+from typing import Tuple
 import os
 import torch
 import numpy as np
@@ -8,7 +9,7 @@ from model_pipeline.networks.unet3d.model import ResidualUNetSE3D
 
 # TO DO: Testing
 
-def interpolate_kpts(kpts_disps, interp_mode, shape, device='cpu'):
+def interpolate_kpts(kpts_disps: str, interp_mode: str, shape: Tuple[int, int, int], device: str='cpu') -> torch.Tensor:
     D, H, W = shape
     kpts_disps = np.genfromtxt(kpts_disps, delimiter=",", dtype=np.float32)
 
@@ -33,9 +34,8 @@ def interpolate_kpts(kpts_disps, interp_mode, shape, device='cpu'):
     
     return init_ddf
 
-
-def get_args():
-    parser = argparse.ArgumentParser(description="Run deep biomechanical interpolator with optional initial interpolation.")
+def get_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Run the deep biomechanical interpolator with optional initial interpolation.")
     
     parser.add_argument('-p', '--preop_scan', type=str, required=True, help='Path to the preoperative scan (.nii or .nii.gz).')
     parser.add_argument('-i', '--init_disp', type=str, default=None, help='Path to the initial displacement field (.h5). If not provided, will interpolate from the provided keypoints.')
@@ -45,8 +45,6 @@ def get_args():
     parser.add_argument('-o','--output', type=str, default=".", help='Directory to save the output displacement field.')
 
     return parser.parse_args()
-
-
 
 
 if __name__ == "__main__":
