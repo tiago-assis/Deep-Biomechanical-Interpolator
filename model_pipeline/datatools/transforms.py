@@ -54,7 +54,7 @@ class LoadRandDDFd(MapTransform):
     
 class InterpKptDispsd(MapTransform):
     def __init__(self, keys: List[str], 
-                 interp: str = 'tps', 
+                 interp: Optional[str] = None, 
                  min_kpts: int = 20, 
                  max_kpts: int = 30, 
                  seed: Optional[int] = None, 
@@ -62,10 +62,10 @@ class InterpKptDispsd(MapTransform):
         """
         Args:
             keys (List[str]): List of dictionary keys to apply the transform.
-            interp (str): Interpolation method, either 'tps' (Thin Plate Spline) or 'linear'.
+            interp (Optional[str], optional): Interpolation method, either 'tps', 'linear', or None.
             min_kpts (int): Minimum number of keypoints to sample.
             max_kpts (int): Maximum number of keypoints to sample.
-            seed (int or None): Random seed for reproducibility.
+            seed (Optional[int], optional): Random seed for reproducibility.
             device (str): Device for tensor computations ('cuda' or 'cpu').
         """
         super().__init__(keys)
@@ -105,6 +105,11 @@ class InterpKptDispsd(MapTransform):
                 ddf_interp = LinearInterpolation3d((D,H,W)).to(self.device)
             elif self.interp == 'tps':
                 ddf_interp = ThinPlateSpline((D,H,W)).to(self.device)
+            elif self.interp is None:
+                if np.random.rand() < 0.5:
+                    ddf_interp = LinearInterpolation3d((D,H,W)).to(self.device)
+                else:
+                    ddf_interp = ThinPlateSpline((D,H,W)).to(self.device)
 
             kpts = np.genfromtxt(kpts_path, delimiter="\t", skip_header=6, dtype=np.float32)[:,:3]
             _, unique_idxs = np.unique(kpts, axis=0, return_index=True)

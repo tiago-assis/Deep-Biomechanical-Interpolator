@@ -13,7 +13,7 @@ def generate_datasets(data_path: str,
                       split: List[float] = [0.1, 0.15], 
                       augment: bool = True, 
                       size: Tuple[int, int, int] = (160,192,144),
-                      interp: str = 'tps', 
+                      interp: Optional[str]= None, 
                       min_kpts: int = 15, 
                       max_kpts: int = 20, 
                       device: str = 'cuda', 
@@ -28,7 +28,7 @@ def generate_datasets(data_path: str,
         split (List[float], optional): List specifying validation and test splits. Defaults to [0.1, 0.15].
         augment (bool, optional): Whether to apply data augmentation. Defaults to True.
         size (Tuple[int, int, int], optional): Target shape (D, H, W) of the input tensors. Defaults to (160, 192, 144).
-        interp (str, optional): Interpolation method for displacement field. Defaults to 'tps'.
+        interp (str, optional): Interpolation method for displacement field; either 'tps', 'linear', or None. Defaults to None.
         min_kpts (int, optional): Minimum number of keypoints to sample. Defaults to 15.
         max_kpts (int, optional): Maximum number of keypoints to sample. Defaults to 20.
         device (str, optional): Device to load data to ('cuda' or 'cpu'). Defaults to 'cuda'.
