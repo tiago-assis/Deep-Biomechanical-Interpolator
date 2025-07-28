@@ -1,6 +1,6 @@
 # Deep Biomechanically-Guided Interpolation for Keypoint-Based Brain Shift Registration
 
-## Framework Overview
+### Framework Overview
 
 Our framework estimates a dense and physically plausible displacement field from a sparse set of matched keypoints between pre- and intra-operative images. The core of our method is a deep, biomechanically guided interpolator that refines an initial displacement field.
 
