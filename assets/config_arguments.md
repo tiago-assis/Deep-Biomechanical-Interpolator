@@ -1,4 +1,4 @@
-# Command Line Argument Options
+# Training Configs
 
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
