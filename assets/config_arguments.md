@@ -13,7 +13,7 @@
 | `--size` | `int, nargs=3` | `(160,192,144)` | Input tensor size to the model. |
 | `--model` | `str` | `'res-unet-se'` | Model architecture to use (vxm, unet, res-unet, res-unet-se). |
 | `--predict_residual` | `flag` | `False` | Predict residuals `x + f(x,y)` or full displacements `f(x,y)`. |
-| `--layer_order` | `str` | `'cil'` | Order of components in convolution blocks. Check ![model_pipeline/networks/unet3d/buildingblocks.py](model_pipeline/networks/unet3d/buildingblocks.py) for options. |
+| `--layer_order` | `str` | `'cil'` | Order of components in convolution blocks. Check ![../model_pipeline/networks/unet3d/buildingblocks.py](../model_pipeline/networks/unet3d/buildingblocks.py) for options. |
 | `--num_features`, `--nfeats` | `int or str` | `32` | Feature channels per level. |
 | `--num_levels`, `--nlevels` | `int` | `4` | Encoder/decoder levels. |
 | `--num_groups`, `--ngroups` | `int` | `8` | Groups for GroupNorm. |
