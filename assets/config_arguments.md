@@ -14,9 +14,9 @@
 | `--model` | `str` | `'res-unet-se'` | Model architecture to use (vxm, unet, res-unet, res-unet-se). |
 | `--predict_residual` | `flag` | `False` | Predict residuals `x + f(x,y)` or full displacements `f(x,y)`. |
 | `--layer_order` | `str` | `'cil'` | Order of components in convolution blocks. Check ![../model_pipeline/networks/unet3d/buildingblocks.py](../model_pipeline/networks/unet3d/buildingblocks.py) for options. |
-| `--num_features`, \ `--nfeats` | `int or str` | `32` | Feature channels per level. |
-| `--num_levels`, \ `--nlevels` | `int` | `4` | Encoder/decoder levels. |
-| `--num_groups`, \ `--ngroups` | `int` | `8` | Groups for GroupNorm. |
+| `--num_features`, <br> `--nfeats` | `int or str` | `32` | Feature channels per level. |
+| `--num_levels`, <br> `--nlevels` | `int` | `4` | Encoder/decoder levels. |
+| `--num_groups`, <br> `--ngroups` | `int` | `8` | Groups for GroupNorm. |
 | `--se_mode` | `str` | `'scse'` | Squeeze-and-Excitation module (scse, cse, or sse). |
 | `--upsample_mode` | `str` | `'nearest'` | Upsampling method for the decoder (nearest or trilinear). |
 | `--pool_mode` | `str` | `'max'` | Pooling method for the encoder (max or avg). |
@@ -26,7 +26,7 @@
 | `--lncc` | `flag` | `False` | Flag to use the LNCC loss. |
 | `--lncc_w` | `float` | `1.0` | Weight for the LNCC loss. |
 | `--lncc_window` | `int` | `2` | LNCC window size. |
-| `--be`, `--hess`, \ `--hessian` | `flag` | `False` | Flag to use bending energy penalty. |
+| `--be`, `--hess`, <br> `--hessian` | `flag` | `False` | Flag to use bending energy penalty. |
 | `--jdet` | `flag` | `False` | Flag to use Jacobian determinant regularization. |
 | `--jdet_mode` | `str` | `'negative'` | Jacobian mode (`'negative'` or `'unit'`). |
 | `--reg_w` | `float` | `1.0` | Regularization weight. |
