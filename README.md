@@ -1,6 +1,6 @@
 # Deep Biomechanically-Guided Interpolation for Keypoint-Based Brain Shift Registration
 
-This repository provides the implementation for interpolating and predicting biomechanically-corrected displacement fields, as described in Section 2.4 of our paper: ![Deep Biomechanically-Guided Interpolation for Keypoint-Based Brain Shift Registration]().
+This repository provides the implementation for interpolating and predicting biomechanically-corrected displacement fields, as described in Section 2.4 of our paper: [Deep Biomechanically-Guided Interpolation for Keypoint-Based Brain Shift Registration]().
 
 The code for the synthetic ground truth generation pipeline will be made available in a future release.
 
@@ -64,7 +64,7 @@ pip install -r requirements.txt
 ```
 
 ## Training
-To reproduce the training done in this work, you will be required to download our custom dataset ![NeuriPhy]() (TBD) that comprises: preoperative MRI data, brain and tumor segmentations, extracted keypoints, and biomechanically simulated deformation fields.
+To reproduce the training done in this work, you will be required to download our custom dataset [NeuriPhy]() (TBD) that comprises: preoperative MRI data, brain and tumor segmentations, extracted keypoints, and biomechanically simulated deformation fields.
 
 \
 You can then set up the training configuration file and run the following script:
@@ -119,12 +119,13 @@ python inference.py \
 
 ## Acknowledgements
 
-- The ![UPENN-GBM](https://doi.org/10.7937/TCIA.709X-DN49) dataset provided the preoperative patient MRI scans and segmentations for our study.
-- The biomechanical framework by Yu *et al.* ![[1]](https://doi.org/10.1002/cnm.3539), ![[2]](https://doi.org/10.1016/j.compbiomed.2022.105271) was used to generate synthetic ground-truth brain deformations.
-- ![SynthSeg](https://github.com/BBillot/SynthSeg) ![[3]](https://doi.org/10.1016/j.media.2023.102789) was employed to segment the brain parenchyma and cerebrospinal fluid from the MRI scans.
-- The ![3D SIFT-Rank](https://github.com/3dsift-rank/3DSIFT-Rank/tree/Appearance%2BGeometry) ![[4]](https://doi.org/10.1016/j.neuroimage.2019.116208) algorithm was utilized to extract sparse anatomical keypoints from the preoperative images.
-- These publicly available implementations of the ![Delaunay triangulation-based linear interpolation](https://github.com/SamuelJoutard/DrivingPointsPredictionMIR/blob/01e3dd8c4188e70a6113209335f2ecaf1ce0a75d/models.py#L802) and ![thin plate spline interpolation](https://github.com/mattiaspaul/VoxelMorphPlusPlus/blob/0f8da77b4d5bb4df80d188188df9725013bb960b/src/utils_voxelmorph_plusplus.py#L271) algorithms were used as a baseline and to compute initial displacement fields.
-- Part of the code used for implementing the network architectures can be publicly found ![here](https://github.com/alanqrwang/keymorph/tree/dcb799622b2b60877dad27e9705ae6408cdb491c/keymorph/unet3d).
+- The [UPENN-GBM](https://doi.org/10.7937/TCIA.709X-DN49) dataset provided the preoperative patient MRI scans and segmentations for our study.
+- The biomechanical framework by Yu *et al.* [[1]](https://doi.org/10.1002/cnm.3539), [[2]](https://doi.org/10.1016/j.compbiomed.2022.105271) was used to generate synthetic ground-truth brain deformations.
+- [SynthSeg](https://github.com/BBillot/SynthSeg) [[3]](https://doi.org/10.1016/j.media.2023.102789) was employed to segment the brain parenchyma and cerebrospinal fluid from the MRI scans.
+- The [3D SIFT-Rank](https://github.com/3dsift-rank/3DSIFT-Rank/tree/Appearance%2BGeometry) [[4]](https://doi.org/10.1016/j.neuroimage.2019.116208) algorithm was utilized to extract sparse anatomical keypoints from the preoperative images.
+- These publicly available implementations of the [Delaunay triangulation-based linear interpolation](https://github.com/SamuelJoutard/DrivingPointsPredictionMIR/blob/01e3dd8c4188e70a6113209335f2ecaf1ce0a75d/models.py#L802) and [thin plate spline interpolation](https://github.com/mattiaspaul/VoxelMorphPlusPlus/blob/0f8da77b4d5bb4df80d188188df9725013bb960b/src/utils_voxelmorph_plusplus.py#L271) algorithms were used as a baseline and to compute initial displacement fields.
+- Part of the code used for implementing the network architectures can be publicly found [here](https://github.com/alanqrwang/keymorph/tree/dcb799622b2b60877dad27e9705ae6408cdb491c/keymorph/unet3d).
+
 
 
 
