@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     model_path = "./checkpoints/model_tpslinear_200.pt"
     if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model checkpoint file does not exist. Please download it and extract it into the checkpoints folder: [url]")
+        raise FileNotFoundError(f"Model checkpoint file does not exist. Please download it and extract it into the checkpoints folder: https://github.com/tiago-assis/Deep-Biomechanical-Interpolator/blob/main/checkpoints")
     checkpoint = torch.load(model_path)
 
     preop_scan = sitk.ReadImage(args.preop_scan)
