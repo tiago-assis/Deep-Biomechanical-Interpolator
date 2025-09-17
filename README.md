@@ -33,14 +33,11 @@ The process to train the model was performed as follows:
 
 If this work is useful to you, please consider citing the original paper!
 ```
-@misc{assis2025deepbiomechanicallyguidedinterpolationkeypointbased,
-      title={Deep Biomechanically-Guided Interpolation for Keypoint-Based Brain Shift Registration}, 
-      author={Tiago Assis and Ines P. Machado and Benjamin Zwick and Nuno C. Garcia and Reuben Dorent},
-      year={2025},
-      eprint={2508.13762},
-      archivePrefix={arXiv},
-      primaryClass={eess.IV},
-      url={https://arxiv.org/abs/2508.13762}, 
+@article{assis2025deep,
+  title={Deep Biomechanically-Guided Interpolation for Keypoint-Based Brain Shift Registration},
+  author={Assis, Tiago and Machado, Ines P and Zwick, Benjamin and Garcia, Nuno C and Dorent, Reuben},
+  journal={arXiv preprint arXiv:2508.13762},
+  year={2025}
 }
 ```
 
@@ -131,6 +128,7 @@ python inference.py \
 - The [3D SIFT-Rank](https://github.com/3dsift-rank/3DSIFT-Rank/tree/Appearance%2BGeometry) [[4]](https://doi.org/10.1016/j.neuroimage.2019.116208) algorithm was utilized to extract sparse anatomical keypoints from the preoperative images.
 - These publicly available implementations of the [Delaunay triangulation-based linear interpolation](https://github.com/SamuelJoutard/DrivingPointsPredictionMIR/blob/01e3dd8c4188e70a6113209335f2ecaf1ce0a75d/models.py#L802) and [thin plate spline interpolation](https://github.com/mattiaspaul/VoxelMorphPlusPlus/blob/0f8da77b4d5bb4df80d188188df9725013bb960b/src/utils_voxelmorph_plusplus.py#L271) algorithms were used as a baseline and to compute initial displacement fields.
 - Part of the code used for implementing the network architectures can be publicly found [here](https://github.com/alanqrwang/keymorph/tree/dcb799622b2b60877dad27e9705ae6408cdb491c/keymorph/unet3d).
+
 
 
 
