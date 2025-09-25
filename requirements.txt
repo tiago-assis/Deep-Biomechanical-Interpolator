@@ -3,7 +3,7 @@ numpy
 scipy
 nibabel
 pynrrd
-sickit-learn
+scikit-learn
 natsort
 matplotlib
 torch
