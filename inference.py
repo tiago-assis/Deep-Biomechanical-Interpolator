@@ -2,6 +2,7 @@ import argparse
 from typing import Tuple
 import os
 import torch
+import torch.nn.functional as F
 import numpy as np
 import SimpleITK as sitk
 from model_pipeline.interpolators.interpolators import ThinPlateSpline, LinearInterpolation3d
@@ -32,7 +33,7 @@ def interpolate_kpts(kpts_disps: str, interp_mode: str, shape: Tuple[int, int, i
     ], dim=1).to(device)
 
     init_ddf = interp(kpts_norm.unsqueeze(
-        0), disps.unsqueeze(0)).squeeze(0)  # (3, D, H, W)
+        0), disps.unsqueeze(0))  # (1, 3, D, H, W)
 
     return init_ddf
 
@@ -76,12 +77,20 @@ if __name__ == "__main__":
 
     preop_scan = sitk.ReadImage(args.preop_scan)
     preop_scan_arr = sitk.GetArrayFromImage(preop_scan)
-    preop_scan_arr = torch.from_numpy(preop_scan_arr).unsqueeze(0).unsqueeze(0)  # (1, 1, D, H, W)
+
+    preop_scan_arr = (preop_scan_arr - np.mean(preop_scan_arr)
+                      ) / np.std(preop_scan_arr)  # normalize
+    preop_scan_arr = torch.tensor(preop_scan_arr, dtype=torch.float32)
+    pad_d, pad_h, pad_w = [(16 - (n % 16)) % 16 for n in preop_scan_arr.shape]
+    padding = (0, pad_w, 0, pad_h, 0, pad_d)
+    preop_scan_arr = F.pad(preop_scan_arr, padding).unsqueeze(
+        0).unsqueeze(0)  # resize # (1, 1, D, H, W)
     shape = preop_scan_arr.shape[2:]
 
     if args.init_disp is None:
         init_ddf = interpolate_kpts(args.kpt_disps, interp_mode=args.interp_mode,
-                                    shape=shape, device=args.device).unsqueeze(0) # (1, 3, D, H, W)
+                                    # (1, 3, D, H, W)
+                                    shape=shape, device=args.device)
     else:
         transform = sitk.ReadTransform(args.init_disp)  # (D, H, W, 3)
         init_ddf = sitk.TransformToDisplacementField(transform,
@@ -107,11 +116,14 @@ if __name__ == "__main__":
     ).to(args.device)
     model.load_state_dict(checkpoint['model_state_dict'])
 
-    input = torch.cat([init_ddf, preop_scan_arr], dim=1).to(args.device)  # (1, 4, D, H, W)
+    input = torch.cat([init_ddf, preop_scan_arr], dim=1).to(
+        args.device)  # (1, 4, D, H, W)
     corrected_ddf = model(input).squeeze(0)  # (3, D, H, W)
 
-    corrected_ddf_sitk = corrected_ddf.detach().cpu().numpy().transpose(1, 2, 3, 0).astype(np.float64)  # (D, H, W, 3)
-    corrected_ddf_sitk = sitk.GetImageFromArray(corrected_ddf_sitk, isVector=True)
+    corrected_ddf_sitk = corrected_ddf.detach().cpu().numpy().transpose(
+        1, 2, 3, 0).astype(np.float64)  # (D, H, W, 3)
+    corrected_ddf_sitk = sitk.GetImageFromArray(
+        corrected_ddf_sitk, isVector=True)
     corrected_ddf_sitk.SetOrigin(preop_scan.GetOrigin())
     corrected_ddf_sitk.SetSpacing(preop_scan.GetSpacing())
     corrected_ddf_sitk.SetDirection(preop_scan.GetDirection())
