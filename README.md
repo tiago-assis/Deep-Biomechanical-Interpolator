@@ -81,9 +81,9 @@ The training script is highly modular, allowing the configuration of several asp
 To run a pre-trained model, please download the weights in ![checkpoints](checkpoints/).
 
 \
-Two approaches can then be taken:
+Three approaches can then be taken:
 
-**1.** You have access to an initial displacement field and want to run the model for **displacement field correction** only.
+**1.** You have access to an initial displacement field and want to run the model for **displacement field correction** only. This displacement must be in H5 or NPZ format.
 
 Example script:
 ```
@@ -111,6 +111,9 @@ python inference.py \
   -o /path/to/output/directory/
 ```
 
+\
+**3.** You can directly integrate the model into your code as an interpolation step by feeding the model a concatenated (4,D,H,W) tensor including the normalized preoperative ceT1 MRI (1,D,H,W) and initial displacement vector field (3,D,H,W).
+
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
 | `-p`, <br> `--preop_scan` | `str` | **Required** | Path to the preoperative scan (`.nii` or `.nii.gz`). |
@@ -128,24 +131,3 @@ python inference.py \
 - The [3D SIFT-Rank](https://github.com/3dsift-rank/3DSIFT-Rank/tree/Appearance%2BGeometry) [[4]](https://doi.org/10.1016/j.neuroimage.2019.116208) algorithm was utilized to extract sparse anatomical keypoints from the preoperative images.
 - These publicly available implementations of the [Delaunay triangulation-based linear interpolation](https://github.com/SamuelJoutard/DrivingPointsPredictionMIR/blob/01e3dd8c4188e70a6113209335f2ecaf1ce0a75d/models.py#L802) and [thin plate spline interpolation](https://github.com/mattiaspaul/VoxelMorphPlusPlus/blob/0f8da77b4d5bb4df80d188188df9725013bb960b/src/utils_voxelmorph_plusplus.py#L271) algorithms were used as a baseline and to compute initial displacement fields.
 - Part of the code used for implementing the network architectures can be publicly found [here](https://github.com/alanqrwang/keymorph/tree/dcb799622b2b60877dad27e9705ae6408cdb491c/keymorph/unet3d).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
