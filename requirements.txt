@@ -6,7 +6,7 @@ pynrrd
 scikit-learn
 natsort
 matplotlib
---index-url https://download.pytorch.org/whl/cu124
+--extra-index-url https://download.pytorch.org/whl/cu124
 torch
 torchvision
 torchaudio
