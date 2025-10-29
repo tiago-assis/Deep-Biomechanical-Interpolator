@@ -5,8 +5,12 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 import SimpleITK as sitk
+from monai.transforms import NormalizeIntensity, ResizeWithPadOrCrop
 from model_pipeline.interpolators.interpolators import ThinPlateSpline, LinearInterpolation3d
 from model_pipeline.networks.unet3d.model import ResidualUNetSE3D
+
+# TO DO: Testing
+# TO DO: Add .npz support for init disp field
 
 
 def interpolate_kpts(kpts_disps: str, interp_mode: str, shape: Tuple[int, int, int], device: str = 'cpu') -> torch.Tensor:
@@ -65,8 +69,7 @@ if __name__ == "__main__":
     assert args.init_disp is None or args.init_disp.endswith(('.h5', '.hdf5', '.npz')), "Initial displacement field must be a HDF or NPZ file."
     if args.init_disp.endswith('.npz'):
         raise NotImplementedError('Model does not yet accept initial displacement fields of the NPZ format.')
-    assert args.kpt_disps is None or args.kpt_disps.endswith('.csv') or args.kpt_disps.endswith(
-        '.txt'), "Keypoint displacements must be a CSV text file."
+    assert args.kpt_disps is None or args.kpt_disps.endswith(('.csv', 'txt')), "Keypoint displacements must be a CSV text file."
 
     model_path = "./checkpoints/model_tpslinear_200.pt"
     if not os.path.exists(model_path):
@@ -75,32 +78,34 @@ if __name__ == "__main__":
     checkpoint = torch.load(model_path, map_location=args.device)
 
     preop_scan = sitk.ReadImage(args.preop_scan)
-    preop_scan_arr = sitk.GetArrayFromImage(preop_scan)
+    preop_scan_arr = sitk.GetArrayFromImage(preop_scan) # (D_, H_, W_)
 
-    preop_scan_arr = (preop_scan_arr - np.mean(preop_scan_arr)
-                      ) / np.std(preop_scan_arr)  # normalize
-    preop_scan_arr = torch.tensor(preop_scan_arr, dtype=torch.float32)
+    preop_scan_arr = (preop_scan_arr - np.mean(preop_scan_arr)) / np.std(preop_scan_arr)  # normalize
+    
     pad_d, pad_h, pad_w = [(16 - (n % 16)) % 16 for n in preop_scan_arr.shape]
     padding = (0, pad_w, 0, pad_h, 0, pad_d)
-    preop_scan_arr = F.pad(preop_scan_arr, padding).unsqueeze(
-        0).unsqueeze(0)  # resize # (1, 1, D, H, W)
+    preop_scan_arr = torch.tensor(preop_scan_arr, dtype=torch.float32)
+    preop_scan_arr = F.pad(preop_scan_arr, padding).unsqueeze(0).unsqueeze(0)  # resize (1, 1, D, H, W)
+    preop_scan_arr = preop_scan_arr.to(args.device)
+
     shape = preop_scan_arr.shape[2:]
 
     if args.init_disp is None:
-        init_ddf = interpolate_kpts(args.kpt_disps, interp_mode=args.interp_mode,
-                                    # (1, 3, D, H, W)
-                                    shape=shape, device=args.device)
+        init_ddf = interpolate_kpts(args.kpt_disps, interp_mode=args.interp_mode, shape=shape, device=args.device).squeeze(0) # (3, D_, H_, W_)
     else:
-        transform = sitk.ReadTransform(args.init_disp)  # (D, H, W, 3)
+        transform = sitk.ReadTransform(args.init_disp)  # (D_, H_, W_, 3)
         init_ddf = sitk.TransformToDisplacementField(transform,
                                                      sitk.sitkVectorFloat64,
                                                      preop_scan.GetSize(),
                                                      preop_scan.GetOrigin(),
                                                      preop_scan.GetSpacing(),
                                                      preop_scan.GetDirection()
-                                                     # (3, D, H, W)
-                                                     ).transpose(3, 0, 1, 2)
-        init_ddf = torch.from_numpy(init_ddf).unsqueeze(0)  # (1, 3, D, H, W)
+                                                     )
+        init_ddf = sitk.GetArrayFromImage(init_ddf).astype(np.float32)
+        init_ddf = torch.from_numpy(init_ddf).permute(3, 0, 1, 2).to(args.device)  # (3, D_, H_, W_)
+
+    init_ddf = ResizeWithPadOrCrop(shape)(init_ddf).unsqueeze(0)  # (1, 3, D, H, W)
+    init_ddf = torch.where(preop_scan_arr > torch.min(preop_scan_arr), init_ddf, 0) # zero out displacements in background
 
     model = ResidualUNetSE3D(
         in_channels=4,
@@ -115,8 +120,7 @@ if __name__ == "__main__":
     ).to(args.device)
     model.load_state_dict(checkpoint['model_state_dict'])
 
-    input = torch.cat([init_ddf, preop_scan_arr], dim=1).to(
-        args.device)  # (1, 4, D, H, W)
+    input = torch.cat([init_ddf, preop_scan_arr], dim=1) # (1, 4, D, H, W)
     corrected_ddf = model(input).squeeze(0)  # (3, D, H, W)
 
     corrected_ddf_sitk = corrected_ddf.detach().cpu().numpy().transpose(
