@@ -67,7 +67,7 @@ if __name__ == "__main__":
         '.nii'), "Preoperative scan must be a NIfTI file."
     assert args.init_disp is not None or args.kpt_disps is not None, "Either an *initial displacement field* or a *list of displacements at localized keypoint coordinates* must be provided."
     assert args.init_disp is None or args.init_disp.endswith(('.h5', '.hdf5', '.npz')), "Initial displacement field must be a HDF or NPZ file."
-    if args.init_disp.endswith('.npz'):
+    if args.init_disp is not None and args.init_disp.endswith('.npz'):
         raise NotImplementedError('Model does not yet accept initial displacement fields of the NPZ format.')
     assert args.kpt_disps is None or args.kpt_disps.endswith(('.csv', 'txt')), "Keypoint displacements must be a CSV text file."
 
