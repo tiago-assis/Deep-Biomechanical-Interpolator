@@ -1,6 +1,6 @@
 # Deep Biomechanically-Guided Interpolation for Keypoint-Based Brain Shift Registration
 
-This repository provides the implementation for interpolating and predicting biomechanically-corrected displacement fields, as described in Section 2.4 of our paper: [Deep Biomechanically-Guided Interpolation for Keypoint-Based Brain Shift Registration]().
+This repository provides the implementation for interpolating and predicting biomechanically-corrected displacement fields, as described in Section 2.4 of our paper: [Deep Biomechanically-Guided Interpolation for Keypoint-Based Brain Shift Registration](https://www.arxiv.org/abs/2508.13762).
 
 The code for the synthetic ground truth generation pipeline will be made available in a future release.
 
@@ -33,14 +33,11 @@ The process to train the model was performed as follows:
 
 If this work is useful to you, please consider citing the original paper!
 ```
-@misc{assis2025deepbiomechanicallyguidedinterpolationkeypointbased,
-      title={Deep Biomechanically-Guided Interpolation for Keypoint-Based Brain Shift Registration}, 
-      author={Tiago Assis and Ines P. Machado and Benjamin Zwick and Nuno C. Garcia and Reuben Dorent},
-      year={2025},
-      eprint={2508.13762},
-      archivePrefix={arXiv},
-      primaryClass={eess.IV},
-      url={https://arxiv.org/abs/2508.13762}, 
+@article{assis2025deep,
+  title={Deep Biomechanically-Guided Interpolation for Keypoint-Based Brain Shift Registration},
+  author={Assis, Tiago and Machado, Ines P and Zwick, Benjamin and Garcia, Nuno C and Dorent, Reuben},
+  journal={arXiv preprint arXiv:2508.13762},
+  year={2025}
 }
 ```
 
@@ -60,7 +57,6 @@ cd Deep-Biomechanical-Interpolator
 | SciPy | NiBabel | pynrrd |
 | natsort | tqdm | Matplotlib |
 
-Python 3.13 was tested. \
 PyTorch 2.7 with CUDA 12.4+ was tested on NVIDIA RTX 4080 16GB and NVIDIA A100 40/80GB.
 
  \
@@ -70,7 +66,7 @@ pip install -r requirements.txt
 ```
 
 ## Training
-To reproduce the training done in this work, you will be required to download our custom dataset [NeuriPhy]() (TBD) that comprises: preoperative MRI data, brain and tumor segmentations, extracted keypoints, and biomechanically simulated deformation fields.
+To reproduce the training done in this work, you will be required to download our custom dataset [NeuriPhy](https://zenodo.org/records/15381866) (TBD) that comprises: preoperative MRI data, brain and tumor segmentations, extracted keypoints, and biomechanically simulated deformation fields.
 
 \
 You can then set up the training configuration file and run the following script:
@@ -84,9 +80,9 @@ The training script is highly modular, allowing the configuration of several asp
 To run a pre-trained model, please download the weights in ![checkpoints](checkpoints/).
 
 \
-Two approaches can then be taken:
+Three approaches can then be taken:
 
-**1.** You have access to an initial displacement field and want to run the model for **displacement field correction** only.
+**1.** You have access to an initial displacement field and want to run the model for **displacement field correction** only. This displacement must be in H5 or NPZ format.
 
 Example script:
 ```
@@ -94,7 +90,7 @@ python inference.py \
   -p /path/to/preoperative/scan.nii.gz \
   -i /path/to/initial/displacement/field.h5 \
   -d cuda \
-  -o /path/to/output/corrected/displacement/field.h5
+  -o /path/to/output/directory
 ```
 
 \
@@ -111,8 +107,13 @@ python inference.py \
   -k /path/to/keypoints/and/displacements.csv \
   -m linear \
   -d cuda \
-  -o /path/to/output/corrected/displacement/field.h5
+  -o /path/to/output/directory/
 ```
+
+\
+**3.** You can directly **integrate the model into your code** as an interpolation step by importing the relevant classes (see [inference.py](https://github.com/tiago-assis/Deep-Biomechanical-Interpolator/blob/98ddf63f312ff566c580280626d2f248cba2faa9/inference.py#L106)) and feeding the model a concatenated (4,D,H,W) tensor, including the normalized preoperative ceT1 MRI (1,D,H,W) and initial displacement vector field (3,D,H,W).
+
+<br>
 
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
@@ -131,14 +132,6 @@ python inference.py \
 - The [3D SIFT-Rank](https://github.com/3dsift-rank/3DSIFT-Rank/tree/Appearance%2BGeometry) [[4]](https://doi.org/10.1016/j.neuroimage.2019.116208) algorithm was utilized to extract sparse anatomical keypoints from the preoperative images.
 - These publicly available implementations of the [Delaunay triangulation-based linear interpolation](https://github.com/SamuelJoutard/DrivingPointsPredictionMIR/blob/01e3dd8c4188e70a6113209335f2ecaf1ce0a75d/models.py#L802) and [thin plate spline interpolation](https://github.com/mattiaspaul/VoxelMorphPlusPlus/blob/0f8da77b4d5bb4df80d188188df9725013bb960b/src/utils_voxelmorph_plusplus.py#L271) algorithms were used as a baseline and to compute initial displacement fields.
 - Part of the code used for implementing the network architectures can be publicly found [here](https://github.com/alanqrwang/keymorph/tree/dcb799622b2b60877dad27e9705ae6408cdb491c/keymorph/unet3d).
-
-
-
-
-
-
-
-
 
 
 

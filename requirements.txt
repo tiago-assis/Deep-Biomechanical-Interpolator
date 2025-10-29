@@ -3,9 +3,10 @@ numpy
 scipy
 nibabel
 pynrrd
-sickit-learn
+scikit-learn
 natsort
 matplotlib
+--extra-index-url https://download.pytorch.org/whl/cu124
 torch
 torchvision
 torchaudio
