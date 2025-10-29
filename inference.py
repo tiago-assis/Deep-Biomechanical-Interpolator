@@ -8,8 +8,6 @@ import SimpleITK as sitk
 from model_pipeline.interpolators.interpolators import ThinPlateSpline, LinearInterpolation3d
 from model_pipeline.networks.unet3d.model import ResidualUNetSE3D
 
-# TO DO: Testing
-
 
 def interpolate_kpts(kpts_disps: str, interp_mode: str, shape: Tuple[int, int, int], device: str = 'cpu') -> torch.Tensor:
     D, H, W = shape
@@ -64,8 +62,9 @@ if __name__ == "__main__":
     assert args.preop_scan.endswith('.nii.gz') or args.preop_scan.endswith(
         '.nii'), "Preoperative scan must be a NIfTI file."
     assert args.init_disp is not None or args.kpt_disps is not None, "Either an *initial displacement field* or a *list of displacements at localized keypoint coordinates* must be provided."
-    assert args.init_disp is None or args.init_disp.endswith(
-        '.h5'), "Initial displacement field must be a .h5 file."
+    assert args.init_disp is None or args.init_disp.endswith(('.h5', '.hdf5', '.npz')), "Initial displacement field must be a HDF or NPZ file."
+    if args.init_disp.endswith('.npz'):
+        raise NotImplementedError('Model does not yet accept initial displacement fields of the NPZ format.')
     assert args.kpt_disps is None or args.kpt_disps.endswith('.csv') or args.kpt_disps.endswith(
         '.txt'), "Keypoint displacements must be a CSV text file."
 
