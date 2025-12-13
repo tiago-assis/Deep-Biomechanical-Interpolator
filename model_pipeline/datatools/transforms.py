@@ -237,12 +237,12 @@ def get_training_transforms(img_keys: List[str],
                                                 sigma_x=(0.5, 1.5),
                                                 sigma_y=(0.5, 1.5),
                                                 sigma_z=(0.5, 1.5),
-                                                prob=0.1)
+                                                prob=0.2)
         
         scale_intensity = RandScaleIntensityd(keys=img_keys, factors=[-0.3, 0.3], prob=0.15)
         shift_intensity = RandScaleIntensityFixedMeand(keys=img_keys, factors=[-0.35, 0.5], preserve_range=True,
                                                        prob=0.15)
-        sim_lowres = RandSimulateLowResolutiond(keys=img_keys, prob=0.125, zoom_range=(0.5, 1.0))
+        sim_lowres = RandSimulateLowResolutiond(keys=img_keys, prob=0.25, zoom_range=(0.5, 1.0))
         adjust_contrast = OneOf(
             transforms=[
                 RandAdjustContrastd(keys=img_keys, prob=0.15, gamma=(0.7, 1.5), 
