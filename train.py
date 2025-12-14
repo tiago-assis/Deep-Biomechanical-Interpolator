@@ -146,7 +146,7 @@ if __name__ == "__main__":
     )
 
     if args.train_save_every > len(train_dataloader):
-        args.train_save_everu = len(train_dataloader)
+        args.train_save_every = len(train_dataloader)
 
     metrics = [
         'Total Loss',
