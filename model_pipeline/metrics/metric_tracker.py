@@ -92,20 +92,16 @@ class MetricTracker():
         """Prints average and standard deviation of metrics for the current epoch."""
         epoch_avg, epoch_std = self.get_metric_avg(metric_type="epoch")
         print(f"\n{self.mode_dict[self.mode]} Epoch Metrics:")
-        for k,v in epoch_avg.items():
-            print(f"{k}: {v:.4f}")
-        for k,v in epoch_std.items():
-            print(f"{k} Std: {v:.4f}")  
+        for metric in self.metrics:
+            print(f"{metric}: {epoch_avg[metric]:.4f} ({epoch_std[metric]:.4f})")
         print("\n")
 
     def print_running(self):
         """Prints average and standard deviation of metrics for the current step."""
         running_avg, running_std = self.get_metric_avg(metric_type='running')
         print(f"\n{self.mode_dict[self.mode]} Running Metrics:")
-        for k,v in running_avg.items():
-            print(f"{k}: {v:.4f}")
-        for k,v in running_std.items():
-            print(f"{k} Std: {v:.4f}")
+        for metric in self.metrics:
+            print(f"{metric}: {running_avg[metric]:.4f} ({running_std[metric]:.4f})")
         print("\n")
 
     def save_metrics(self, writer: SummaryWriter, step: int):
