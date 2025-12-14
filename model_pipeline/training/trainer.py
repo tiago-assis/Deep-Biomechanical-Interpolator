@@ -247,6 +247,7 @@ def run_trainer(
     if save_metrics_every > 0:
         metric_tracker.print_epoch()
 
-    avg_epoch_mse = metric_tracker.get_metric_avg(metric_type='epoch')['Prediction MSE']
+    avg_epoch_metrics, std_epoch_metrics = metric_tracker.get_metric_avg(metric_type='epoch')
+    avg_epoch_mse = avg_epoch_metrics['Prediction MSE']
 
     return avg_epoch_mse if mode == 'val' else None
