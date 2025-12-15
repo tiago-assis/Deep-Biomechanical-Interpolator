@@ -8,23 +8,23 @@ The code for the synthetic ground truth generation pipeline will be made availab
 Accurate compensation of brain shift is critical for maintaining the reliability of neuronavigation during neurosurgery. This work proposes a novel deep learning framework that estimates dense, physically plausible brain deformations from sparse matched keypoints. We first generate a large dataset of synthetic brain deformations using biomechanical simulations. Then, a residual 3D U-Net is trained to refine standard interpolation estimates into biomechanically guided deformations. Experiments on a large set of simulated displacement fields demonstrate that our method significantly outperforms classical interpolators, reducing the mean square error while introducing negligible computational overhead at inference time.
 
 ## Framework Overview
-The core of our method is a deep, biomechanically guided interpolator that refines an initial displacement field.
+The core of our method is a deep, biomechanically guided "interpolator" that refines an initial displacement field.
 
 The process to train the model was performed as follows:
 
-  1. **Synthetic Data Generation**: We generate a large dataset of realistic, synthetic brain deformations using biomechanical simulations based on the UPENN-GBM dataset. This simulates brain deformations caused by gravity and tissue resection.
+  1. **Synthetic Data Generation**: We generate a large dataset of realistic, synthetic brain deformations using biomechanical simulations from preoperative MRI data from the UPENN-GBM dataset. The simulations of brain deformation are driven by gravity and tissue resection.
 
-  2. **Keypoint Extraction**: Sparse matched keypoints are simulated. Keypoints are extracted from the preoperative MRI using 3D SIFT-Rank, and their corresponding displacement vectors are retrieved from the ground-truth synthetic deformation fields.
+  2. **Keypoint Extraction**: Sparse matched keypoints are simulated. Keypoints are extracted from the preoperative MRI using 3D SIFT-Rank, and their corresponding displacement vectors are retrieved from the ground-truth synthetic displacement fields.
 
   3. **Deep Interpolation**:
 
-        - An initial dense displacement field is created from the sparse keypoints using a standard interpolation method (e.g., Linear or Thin Plate Spline).
+        - An initial dense displacement field is created from the sparse keypoints using a standard interpolation method (e.g., 3D linear interpolation or thin-plate splines).
 
         - A residual 3D U-Net takes the preoperative MRI and the initial displacement field as input.
 
-        - The network is trained to predict a residual displacement field, which refines the initial estimate to be more physically plausible and accurate.
+        - The network is trained to predict a residual displacement field, which adds to the initial interpolated one to refine it to be more physically plausible and accurate to the biomechanical behaviors of the brain under resection.
 
-        - The model is trained with a voxel-wise error loss and a Jacobian-based regularization loss to encourage smooth deformations.
+        - The model is trained with a voxel-wise error loss and a Jacobian-based regularization loss to constrain the network from deviation from biomechanical realism.
 
 ![Overview of the proposed framework](assets/framework_pipeline.png)
 **Fig 1.** Overview of our training framework. The synthetic ground truth generation pipeline is depicted with green arrows. The pipeline depicted with blue arrows shows the interpolation of sparse matched keypoint displacements and correction to a biomechanically plausible dense displacement field with a 3D residual U-Net.
@@ -132,6 +132,7 @@ python inference.py \
 - The [3D SIFT-Rank](https://github.com/3dsift-rank/3DSIFT-Rank/tree/Appearance%2BGeometry) [[4]](https://doi.org/10.1016/j.neuroimage.2019.116208) algorithm was utilized to extract sparse anatomical keypoints from the preoperative images.
 - These publicly available implementations of the [Delaunay triangulation-based linear interpolation](https://github.com/SamuelJoutard/DrivingPointsPredictionMIR/blob/01e3dd8c4188e70a6113209335f2ecaf1ce0a75d/models.py#L802) and [thin plate spline interpolation](https://github.com/mattiaspaul/VoxelMorphPlusPlus/blob/0f8da77b4d5bb4df80d188188df9725013bb960b/src/utils_voxelmorph_plusplus.py#L271) algorithms were used as a baseline and to compute initial displacement fields.
 - Part of the code used for implementing the network architectures can be publicly found [here](https://github.com/alanqrwang/keymorph/tree/dcb799622b2b60877dad27e9705ae6408cdb491c/keymorph/unet3d).
+
 
 
 
