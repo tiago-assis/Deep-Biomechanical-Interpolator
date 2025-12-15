@@ -78,12 +78,12 @@ class MetricTracker():
         elif metric_type == 'epoch':
             avg = {
                 metric: self.epoch_totals[metric] / self.epoch_counts[metric] 
-                if self.epoch_counts[metric] > 0 else 0.0 
+                if self.epoch_counts[metric] > 1 else 0.0 
                 for metric in self.metrics
             }
             std = {
                 metric: ((self.epoch_totals_squared[metric] - self.epoch_totals[metric] ** 2 / self.epoch_counts[metric]) / (self.epoch_counts[metric] - 1)) ** 0.5
-                if self.epoch_counts[metric] > 0 else 0.0
+                if self.epoch_counts[metric] > 1 else 0.0
                 for metric in self.metrics
             }
         return avg, std
