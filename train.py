@@ -39,8 +39,8 @@ def set_configs() -> argparse.Namespace:
     parser.add_argument('--size', type=int, nargs=3, default=(160,192,144), help='Input tensor size to the model.')
     parser.add_argument('--model', type=str, default='res-unet-se', choices=['vxm', 'unet', 'res-unet', 'res-unet-se'], help='Model architecture to use (vxm, unet, res-unet, res-unet-se).')
     parser.add_argument('--predict_residual', action='store_true', help='Predict residuals `x + f(x,y)` or full displacements `f(x,y)`.')
-    parser.add_argument('--layer_order', type=str, default='cil', help='Order of components in convolution blocks. Check model_pipeline/networks/unet3d/buildingblocks.py for options.')
-    parser.add_argument('--num_features', '--nfeats', default=32, help='Feature channels per level.')
+    parser.add_argument('--layer_order', type=str, default='cil', help='Order of components in convolution blocks. Check ./model_pipeline/networks/unet3d/buildingblocks.py for options.')
+    parser.add_argument('--num_features', '--nfeats', default="32", help='Feature channels per level. If only an integer is provided, the features will double at each level. Alternatively, provide a comma-separated string of integers to specify the exact number of features at each level (e.g., "16,32,32,32").')
     parser.add_argument('--num_levels', '--nlevels', type=int, default=4, help='Encoder/decoder levels.')
     parser.add_argument('--num_groups', '--ngroups', type=int, default=8, help='Groups for GroupNorm.')
     parser.add_argument('--se_mode', type=str, default='scse', choices=['scse', 'cse', 'sse'], help='Squeeze-and-Excitation module (scse, cse, or sse).')
@@ -48,7 +48,7 @@ def set_configs() -> argparse.Namespace:
     parser.add_argument('--pool_mode', type=str, default='max', choices=['max', 'avg'], help='Pooling method for the encoder (max or avg).')
     parser.add_argument('--mse_w', type=float, default=1.0, help='Weight for the MSE loss.')
     parser.add_argument('-e', '--epochs', type=int, default=20, help='Number of training epochs.')
-    parser.add_argument('--lr', type=float, default=1e-4, help='Learning rate for the Adam optimizer.')
+    parser.add_argument('--lr', type=float, default=5e-4, help='Learning rate for the Adam optimizer.')
     parser.add_argument('--lncc', action='store_true', help='Flag to use the LNCC loss.')
     parser.add_argument('--lncc_w', type=float, default=1.0, help='Weight for the LNCC loss.')
     parser.add_argument('--lncc_window', type=int, default=2, help='LNCC window size.')
@@ -56,7 +56,7 @@ def set_configs() -> argparse.Namespace:
     parser.add_argument('--jdet', action='store_true', help='Flag to use Jacobian determinant regularization.')
     parser.add_argument('--jdet_mode', type=str, default='negative', choices=['negative', 'unit'], help='Jacobian mode (`negative` or `unit`).')
     parser.add_argument('--reg_w', type=float, default=1.0, help='Regularization weight.')
-    parser.add_argument('--extra_eval', action='store_true', help='Flag to compute TRE, Dice, HD95 metrics during validation.')
+    parser.add_argument('--extra_eval', action='store_true', help='Flag to additionally compute TRE, Dice, HD95 metrics during validation.')
     parser.add_argument('--augment', action='store_true', help='Enable data augmentation for the preoperative scans (intensity only).')
     parser.add_argument('--evaluate_every', type=int, default=1, help='Evaluate model every N epochs.')
     parser.add_argument('--train_save_every', type=int, default=121, help='Save training metrics every N batches. If N > total number of cases, then the training metrics are saved every epoch. If N < 0, saving training metrics is disabled.')
@@ -249,7 +249,7 @@ if __name__ == "__main__":
 
     model = model.to(args.device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
-    #scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs, eta_min=args.lr/100)
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs, eta_min=args.lr/100)
     #scheduler = optim.lr_scheduler.PolynomialLR(optimizer, total_iters=args.epochs, power=0.4)
     #scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, threshold=0.001, threshold_mode='abs', cooldown=0, min_lr=1e-6)
 
@@ -323,7 +323,7 @@ if __name__ == "__main__":
                 if is_best or args.checkpoint:
                     save_checkpoint(model, optimizer, epoch, loss, is_best=is_best, filename=args.run_prefix, save_dir=args.save_dir, additional_info=None)
 
-            #scheduler.step()
+            scheduler.step()
 
         if args.epochs % args.evaluate_every != 0:
             loss = run_trainer(
