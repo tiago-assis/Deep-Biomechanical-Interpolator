@@ -72,7 +72,7 @@ if __name__ == "__main__":
     assert os.path.isdir(args.output), "Output path must be a valid directory."
     assert args.output_fmt in ['.h5', '.npz'], "Output format must be either '.h5' or '.npz'."
 
-    model_path = "./checkpoints/model_tpslinear_200.pt"
+    model_path = "./checkpoints/res-unet-se_mixedinterp_32_200_5e-4.pt"
     if not os.path.exists(model_path):
         raise FileNotFoundError(
             f"Model checkpoint file does not exist. Please download it and extract it into the checkpoints folder: https://github.com/tiago-assis/Deep-Biomechanical-Interpolator/tree/main/checkpoints")
