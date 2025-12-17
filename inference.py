@@ -9,8 +9,7 @@ from monai.transforms import NormalizeIntensity, ResizeWithPadOrCrop
 from model_pipeline.interpolators.interpolators import ThinPlateSpline, LinearInterpolation3d
 from model_pipeline.networks.unet3d.model import ResidualUNetSE3D
 
-# TO DO: Testing
-# TO DO: Add .npz support for init disp field
+# TO DO: more testing
 
 
 def interpolate_kpts(kpts_disps: str, interp_mode: str, shape: Tuple[int, int, int], device: str = 'cpu') -> torch.Tensor:
@@ -67,8 +66,6 @@ if __name__ == "__main__":
         '.nii'), "Preoperative scan must be a NIfTI file."
     assert args.init_disp is not None or args.kpt_disps is not None, "Either an *initial displacement field* or a *list of displacements at localized keypoint coordinates* must be provided."
     assert args.init_disp is None or args.init_disp.endswith(('.h5', '.hdf5', '.npz')), "Initial displacement field must be a HDF or NPZ file."
-    if args.init_disp is not None and args.init_disp.endswith('.npz'):
-        raise NotImplementedError('Model does not yet accept initial displacement fields of the NPZ format.')
     assert args.kpt_disps is None or args.kpt_disps.endswith(('.csv', 'txt')), "Keypoint displacements must be a CSV text file."
 
     model_path = "./checkpoints/model_tpslinear_200.pt"
@@ -90,10 +87,8 @@ if __name__ == "__main__":
 
     shape = preop_scan_arr.shape[2:]
 
-    if args.init_disp is None:
-        init_ddf = interpolate_kpts(args.kpt_disps, interp_mode=args.interp_mode, shape=shape, device=args.device).squeeze(0) # (3, D_, H_, W_)
-    else:
-        transform = sitk.ReadTransform(args.init_disp)  # (D_, H_, W_, 3)
+    if args.init_disp.endswith('.h5') or args.init_disp.endswith('.hdf5'):
+        transform = sitk.ReadTransform(args.init_disp)
         init_ddf = sitk.TransformToDisplacementField(transform,
                                                      sitk.sitkVectorFloat64,
                                                      preop_scan.GetSize(),
@@ -102,7 +97,21 @@ if __name__ == "__main__":
                                                      preop_scan.GetDirection()
                                                      )
         init_ddf = sitk.GetArrayFromImage(init_ddf).astype(np.float32)
-        init_ddf = torch.from_numpy(init_ddf).permute(3, 0, 1, 2).to(args.device)  # (3, D_, H_, W_)
+    elif args.init_disp.endswith('.npz'):
+        init_ddf = np.load(args.init_disp)
+        npz_keys = list(init_ddf.keys())
+        if len(npz_keys) != 1:
+            raise ValueError("NPZ file must contain exactly one array representing the displacement field.")
+        init_ddf = np.load(args.init_disp)[npz_keys[0]].astype(np.float32)
+    else:
+        init_ddf = interpolate_kpts(args.kpt_disps, interp_mode=args.interp_mode, shape=shape, device=args.device).squeeze(0) # (3, D_, H_, W_)
+    
+    if init_ddf.shape[0] != 3 and init_ddf.shape[-1] == 3:
+        init_ddf = np.transpose(init_ddf, (3, 0, 1, 2))  # (3, D_, H_, W_)
+    else:
+        raise ValueError("Initial displacement field has incorrect shape. (3, D, H, W) or (D, H, W, 3) expected.")
+    
+    init_ddf = torch.from_numpy(init_ddf).to(args.device)
 
     init_ddf = ResizeWithPadOrCrop(shape)(init_ddf).unsqueeze(0)  # (1, 3, D, H, W)
     init_ddf = torch.where(preop_scan_arr > torch.min(preop_scan_arr), init_ddf, 0) # zero out displacements in background
