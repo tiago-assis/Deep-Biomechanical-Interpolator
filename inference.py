@@ -135,7 +135,7 @@ if __name__ == "__main__":
     corrected_ddf_sitk = corrected_ddf.detach().cpu().numpy().transpose(
         1, 2, 3, 0).astype(np.float64)  # (D, H, W, 3)
     
-    if args.output_fmt == '.npz':
+    if args.output_fmt == 'npz':
         np.savez_compressed(os.path.join(args.output, "corrected_disp_field.npz"), field=corrected_ddf_sitk)
     else:
         corrected_ddf_sitk = sitk.GetImageFromArray(
