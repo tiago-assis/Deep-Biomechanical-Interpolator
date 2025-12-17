@@ -56,7 +56,7 @@ def get_args() -> argparse.Namespace:
     parser.add_argument('-o', '--output', type=str, default=".",
                         help='Directory to save the output displacement field.')
     parser.add_argument('-f', '--output_fmt', type=str, choices=[
-                        '.h5', '.npz'], default='.h5', help='Output format for the displacement field (.h5 SimpleITK transform or .npz numpy array).')
+                        'h5', 'npz'], default='h5', help='Output format for the displacement field (.h5 SimpleITK transform or .npz numpy array).')
 
     return parser.parse_args()
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     assert args.init_disp is None or args.init_disp.endswith(('.h5', '.hdf5', '.npz')), "Initial displacement field must be a HDF or NPZ file."
     assert args.kpt_disps is None or args.kpt_disps.endswith(('.csv', 'txt')), "Keypoint displacements must be a CSV text file."
     assert os.path.isdir(args.output), "Output path must be a valid directory."
-    assert args.output_fmt in ['.h5', '.npz'], "Output format must be either '.h5' or '.npz'."
+    assert args.output_fmt in ['h5', 'npz'], "Output format must be either '.h5' or '.npz'."
 
     model_path = "./checkpoints/res-unet-se_mixedinterp_32_200_5e-4.pt"
     if not os.path.exists(model_path):
