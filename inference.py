@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 import SimpleITK as sitk
-from monai.transforms import NormalizeIntensity, ResizeWithPadOrCrop
+from monai.transforms import NormalizeIntensity, ResizeWithPadOrCrop, DivisiblePad
 from model_pipeline.interpolators.interpolators import ThinPlateSpline, LinearInterpolation3d
 from model_pipeline.networks.unet3d.model import ResidualUNetSE3D
 
@@ -55,6 +55,8 @@ def get_args() -> argparse.Namespace:
                         'cuda', 'cpu'], default='cuda', help='Device to run the model on (cuda or cpu).')
     parser.add_argument('-o', '--output', type=str, default=".",
                         help='Directory to save the output displacement field.')
+    parser.add_argument('-f', '--output_fmt', type=str, choices=[
+                        '.h5', '.npz'], default='.h5', help='Output format for the displacement field (.h5 SimpleITK transform or .npz numpy array).')
 
     return parser.parse_args()
 
@@ -67,25 +69,22 @@ if __name__ == "__main__":
     assert args.init_disp is not None or args.kpt_disps is not None, "Either an *initial displacement field* or a *list of displacements at localized keypoint coordinates* must be provided."
     assert args.init_disp is None or args.init_disp.endswith(('.h5', '.hdf5', '.npz')), "Initial displacement field must be a HDF or NPZ file."
     assert args.kpt_disps is None or args.kpt_disps.endswith(('.csv', 'txt')), "Keypoint displacements must be a CSV text file."
+    assert os.path.isdir(args.output), "Output path must be a valid directory."
+    assert args.output_fmt in ['.h5', '.npz'], "Output format must be either '.h5' or '.npz'."
 
     model_path = "./checkpoints/model_tpslinear_200.pt"
     if not os.path.exists(model_path):
         raise FileNotFoundError(
-            f"Model checkpoint file does not exist. Please download it and extract it into the checkpoints folder: [url]")
+            f"Model checkpoint file does not exist. Please download it and extract it into the checkpoints folder: https://github.com/tiago-assis/Deep-Biomechanical-Interpolator/tree/main/checkpoints")
     checkpoint = torch.load(model_path, map_location=args.device)
 
     preop_scan = sitk.ReadImage(args.preop_scan)
     preop_scan_arr = sitk.GetArrayFromImage(preop_scan) # (D_, H_, W_)
 
-    preop_scan_arr = (preop_scan_arr - np.mean(preop_scan_arr)) / np.std(preop_scan_arr)  # normalize
-    
-    pad_d, pad_h, pad_w = [(16 - (n % 16)) % 16 for n in preop_scan_arr.shape]
-    padding = (0, pad_w, 0, pad_h, 0, pad_d)
-    preop_scan_arr = torch.tensor(preop_scan_arr, dtype=torch.float32)
-    preop_scan_arr = F.pad(preop_scan_arr, padding).unsqueeze(0).unsqueeze(0)  # resize (1, 1, D, H, W)
+    preop_scan_arr = torch.tensor(preop_scan_arr, dtype=torch.float32).unsqueeze(0).unsqueeze(0)  # (1, 1, D_, H_, W_)
+    preop_scan_arr = DivisiblePad(k=16, value=0)(preop_scan_arr)  # pad to be divisible by 2**4 = 16 // (1, 1, D, H, W)
+    preop_scan_arr = NormalizeIntensity()(preop_scan_arr) # standardize
     preop_scan_arr = preop_scan_arr.to(args.device)
-
-    shape = preop_scan_arr.shape[2:]
 
     if args.init_disp.endswith('.h5') or args.init_disp.endswith('.hdf5'):
         transform = sitk.ReadTransform(args.init_disp)
@@ -104,17 +103,17 @@ if __name__ == "__main__":
             raise ValueError("NPZ file must contain exactly one array representing the displacement field.")
         init_ddf = np.load(args.init_disp)[npz_keys[0]].astype(np.float32)
     else:
-        init_ddf = interpolate_kpts(args.kpt_disps, interp_mode=args.interp_mode, shape=shape, device=args.device).squeeze(0) # (3, D_, H_, W_)
+        init_ddf = interpolate_kpts(args.kpt_disps, interp_mode=args.interp_mode, shape=preop_scan_arr.shape[2:], device=args.device).squeeze(0) # (3, D_, H_, W_)
     
     if init_ddf.shape[0] != 3 and init_ddf.shape[-1] == 3:
         init_ddf = np.transpose(init_ddf, (3, 0, 1, 2))  # (3, D_, H_, W_)
     else:
         raise ValueError("Initial displacement field has incorrect shape. (3, D, H, W) or (D, H, W, 3) expected.")
     
-    init_ddf = torch.from_numpy(init_ddf).to(args.device)
-
-    init_ddf = ResizeWithPadOrCrop(shape)(init_ddf).unsqueeze(0)  # (1, 3, D, H, W)
+    init_ddf = torch.tensor(init_ddf, dtype=torch.float32).unsqueeze(0)  # (1, 3, D_, H_, W_) or already (1, 3, D, H, W) if interpolated from keypoints
+    init_ddf = DivisiblePad(k=16, value=0)(init_ddf)  # (1, 3, D, H, W)
     init_ddf = torch.where(preop_scan_arr > torch.min(preop_scan_arr), init_ddf, 0) # zero out displacements in background
+    init_ddf = init_ddf.to(args.device)
 
     model = ResidualUNetSE3D(
         in_channels=4,
@@ -130,15 +129,20 @@ if __name__ == "__main__":
     model.load_state_dict(checkpoint['model_state_dict'])
 
     input = torch.cat([init_ddf, preop_scan_arr], dim=1) # (1, 4, D, H, W)
+    
     corrected_ddf = model(input).squeeze(0)  # (3, D, H, W)
 
     corrected_ddf_sitk = corrected_ddf.detach().cpu().numpy().transpose(
         1, 2, 3, 0).astype(np.float64)  # (D, H, W, 3)
-    corrected_ddf_sitk = sitk.GetImageFromArray(
-        corrected_ddf_sitk, isVector=True)
-    corrected_ddf_sitk.SetOrigin(preop_scan.GetOrigin())
-    corrected_ddf_sitk.SetSpacing(preop_scan.GetSpacing())
-    corrected_ddf_sitk.SetDirection(preop_scan.GetDirection())
-    corrected_transform = sitk.DisplacementFieldTransform(corrected_ddf_sitk)
-    sitk.WriteTransform(corrected_transform, os.path.join(
-        args.output, "corrected_disp_field.h5"))
+    
+    if args.output_fmt == '.npz':
+        np.savez_compressed(os.path.join(args.output, "corrected_disp_field.npz"), field=corrected_ddf_sitk)
+    else:
+        corrected_ddf_sitk = sitk.GetImageFromArray(
+            corrected_ddf_sitk, isVector=True)
+        corrected_ddf_sitk.SetOrigin(preop_scan.GetOrigin())
+        corrected_ddf_sitk.SetSpacing(preop_scan.GetSpacing())
+        corrected_ddf_sitk.SetDirection(preop_scan.GetDirection())
+        corrected_transform = sitk.DisplacementFieldTransform(corrected_ddf_sitk)
+        sitk.WriteTransform(corrected_transform, os.path.join(
+            args.output, "corrected_disp_field.h5"))
