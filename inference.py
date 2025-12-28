@@ -86,29 +86,35 @@ if __name__ == "__main__":
     preop_scan_arr = NormalizeIntensity()(preop_scan_arr) # standardize
     preop_scan_arr = preop_scan_arr.to(args.device)
 
-    if args.init_disp.endswith('.h5') or args.init_disp.endswith('.hdf5'):
-        transform = sitk.ReadTransform(args.init_disp)
-        init_ddf = sitk.TransformToDisplacementField(transform,
-                                                     sitk.sitkVectorFloat64,
-                                                     preop_scan.GetSize(),
-                                                     preop_scan.GetOrigin(),
-                                                     preop_scan.GetSpacing(),
-                                                     preop_scan.GetDirection()
-                                                     )
-        init_ddf = sitk.GetArrayFromImage(init_ddf).astype(np.float32)
-    elif args.init_disp.endswith('.npz'):
-        init_ddf = np.load(args.init_disp)
-        npz_keys = list(init_ddf.keys())
-        if len(npz_keys) != 1:
-            raise ValueError("NPZ file must contain exactly one array representing the displacement field.")
-        init_ddf = np.load(args.init_disp)[npz_keys[0]].astype(np.float32)
+
+    if args.init_disp is not None:
+        if args.init_disp.endswith('.h5') or args.init_disp.endswith('.hdf5'):
+            transform = sitk.ReadTransform(args.init_disp)
+            init_ddf = sitk.TransformToDisplacementField(transform,
+                                                        sitk.sitkVectorFloat64,
+                                                        preop_scan.GetSize(),
+                                                        preop_scan.GetOrigin(),
+                                                        preop_scan.GetSpacing(),
+                                                        preop_scan.GetDirection()
+                                                        )
+            init_ddf = sitk.GetArrayFromImage(init_ddf).astype(np.float32)
+        else:
+            init_ddf = np.load(args.init_disp)
+            npz_keys = list(init_ddf.keys())
+            if len(npz_keys) != 1:
+                raise ValueError("NPZ file must contain exactly one array representing the displacement field.")
+            init_ddf = np.load(args.init_disp)[npz_keys[0]].astype(np.float32)
     else:
         init_ddf = interpolate_kpts(args.kpt_disps, interp_mode=args.interp_mode, shape=preop_scan_arr.shape[2:], device=args.device).squeeze(0) # (3, D_, H_, W_)
     
-    if init_ddf.shape[0] != 3 and init_ddf.shape[-1] == 3:
+
+    if init_ddf.shape[0] == 3:
+        pass
+    elif init_ddf.shape[-1] == 3:
         init_ddf = np.transpose(init_ddf, (3, 0, 1, 2))  # (3, D_, H_, W_)
     else:
         raise ValueError("Initial displacement field has incorrect shape. (3, D, H, W) or (D, H, W, 3) expected.")
+    
     
     init_ddf = torch.tensor(init_ddf, dtype=torch.float32).unsqueeze(0)  # (1, 3, D_, H_, W_) or already (1, 3, D, H, W) if interpolated from keypoints
     init_ddf = DivisiblePad(k=16, value=0)(init_ddf)  # (1, 3, D, H, W)
