@@ -57,7 +57,7 @@ def get_args() -> argparse.Namespace:
     parser.add_argument('-f', '--output_fmt', type=str, choices=[
                         'h5', 'npz'], default='h5', help='Output format for the displacement field (.h5 SimpleITK transform or .npz numpy array).')
     parser.add_argument('-w', '--weights', type=str, default='./checkpoints/res-unet-se_mixedinterp_32_200_5e-4.pt',
-                        help='Path to the model weights. If not available, please download it from: https://github.com/tiago-assis/Deep-Biomechanical-Interpolator/tree/main/checkpoints')
+                        help='Path to the model weights. Please download the latest weights from: https://github.com/tiago-assis/Deep-Biomechanical-Interpolator/tree/main/checkpoints')
 
     return parser.parse_args()
 
