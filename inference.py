@@ -9,8 +9,9 @@ from monai.transforms import NormalizeIntensity, ResizeWithPadOrCrop, DivisibleP
 from model_pipeline.interpolators.interpolators import ThinPlateSpline, LinearInterpolation3d
 from model_pipeline.networks.unet3d.model import ResidualUNetSE3D
 
-# TO DO: more testing
+MODEL_PATH = "./checkpoints/res-unet-se_mixedinterp_32_200_5e-4.pt"
 
+# TO DO: more testing
 
 def interpolate_kpts(kpts_disps: str, interp_mode: str, shape: Tuple[int, int, int], device: str = 'cpu') -> torch.Tensor:
     D, H, W = shape
@@ -72,11 +73,10 @@ if __name__ == "__main__":
     assert os.path.isdir(args.output), "Output path must be a valid directory."
     assert args.output_fmt in ['h5', 'npz'], "Output format must be either '.h5' or '.npz'."
 
-    model_path = "./checkpoints/res-unet-se_mixedinterp_32_200_5e-4.pt"
-    if not os.path.exists(model_path):
+    if not os.path.exists(MODEL_PATH):
         raise FileNotFoundError(
-            f"Model checkpoint file does not exist. Please download it and extract it into the checkpoints folder: https://github.com/tiago-assis/Deep-Biomechanical-Interpolator/tree/main/checkpoints")
-    checkpoint = torch.load(model_path, map_location=args.device)
+            f"Model checkpoint file does not exist. Please download it from: https://github.com/tiago-assis/Deep-Biomechanical-Interpolator/tree/main/checkpoints")
+    checkpoint = torch.load(MODEL_PATH, map_location=args.device)
 
     preop_scan = sitk.ReadImage(args.preop_scan)
     preop_scan_arr = sitk.GetArrayFromImage(preop_scan) # (D_, H_, W_)
