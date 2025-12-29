@@ -9,8 +9,6 @@ from monai.transforms import NormalizeIntensity, ResizeWithPadOrCrop, DivisibleP
 from model_pipeline.interpolators.interpolators import ThinPlateSpline, LinearInterpolation3d
 from model_pipeline.networks.unet3d.model import ResidualUNetSE3D
 
-MODEL_PATH = "./checkpoints/res-unet-se_mixedinterp_32_200_5e-4.pt"
-
 # TO DO: more testing
 
 def interpolate_kpts(kpts_disps: str, interp_mode: str, shape: Tuple[int, int, int], device: str = 'cpu') -> torch.Tensor:
@@ -58,6 +56,8 @@ def get_args() -> argparse.Namespace:
                         help='Directory to save the output displacement field.')
     parser.add_argument('-f', '--output_fmt', type=str, choices=[
                         'h5', 'npz'], default='h5', help='Output format for the displacement field (.h5 SimpleITK transform or .npz numpy array).')
+    parser.add_argument('-w', '--weights', type=str, default='./checkpoints/res-unet-se_mixedinterp_32_200_5e-4.pt',
+                        help='Path to the model weights. If not available, please download it from: https://github.com/tiago-assis/Deep-Biomechanical-Interpolator/tree/main/checkpoints')
 
     return parser.parse_args()
 
@@ -72,11 +72,9 @@ if __name__ == "__main__":
     assert args.kpt_disps is None or args.kpt_disps.endswith(('.csv', 'txt')), "Keypoint displacements must be a CSV text file."
     assert os.path.isdir(args.output), "Output path must be a valid directory."
     assert args.output_fmt in ['h5', 'npz'], "Output format must be either '.h5' or '.npz'."
+    assert os.path.exists(args.weights) and os.path.isfile(args.weights), "Path to the model weights file must be valid. Please download it from: https://github.com/tiago-assis/Deep-Biomechanical-Interpolator/tree/main/checkpoints"
 
-    if not os.path.exists(MODEL_PATH):
-        raise FileNotFoundError(
-            f"Model checkpoint file does not exist. Please download it from: https://github.com/tiago-assis/Deep-Biomechanical-Interpolator/tree/main/checkpoints")
-    checkpoint = torch.load(MODEL_PATH, map_location=args.device)
+    checkpoint = torch.load(args.weights, map_location=args.device)
 
     preop_scan = sitk.ReadImage(args.preop_scan)
     preop_scan_arr = sitk.GetArrayFromImage(preop_scan) # (D_, H_, W_)
