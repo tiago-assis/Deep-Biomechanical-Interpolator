@@ -39,8 +39,7 @@ editor="Dou, Qi and Ban, Yutong and Jin, Yueming and Bano, Sophia and Unberath, 
 title="Deep Biomechanically-Guided Interpolation for Keypoint-Based Brain Shift Registration",
 booktitle="Collaborative Intelligence and Autonomy in Image-Guided Surgery",
 year="2026",
-publisher="Springer Nature Switzerland",
-address="Cham",
+publisher="Springer Cham",
 pages="105--115",
 isbn="978-3-032-09784-2",
 doi="https://doi.org/10.1007/978-3-032-09784-2_11"
@@ -142,6 +141,7 @@ python inference.py \
 - The [3D SIFT-Rank](https://github.com/3dsift-rank/3DSIFT-Rank/tree/Appearance%2BGeometry) [[4]](https://doi.org/10.1016/j.neuroimage.2019.116208) algorithm was utilized to extract sparse anatomical keypoints from the preoperative images.
 - These publicly available implementations of the [Delaunay triangulation-based linear interpolation](https://github.com/SamuelJoutard/DrivingPointsPredictionMIR/blob/01e3dd8c4188e70a6113209335f2ecaf1ce0a75d/models.py#L802) and [thin plate spline interpolation](https://github.com/mattiaspaul/VoxelMorphPlusPlus/blob/0f8da77b4d5bb4df80d188188df9725013bb960b/src/utils_voxelmorph_plusplus.py#L271) algorithms were used as a baseline and to compute initial displacement fields.
 - Part of the code used for implementing the network architectures can be publicly found [here](https://github.com/alanqrwang/keymorph/tree/dcb799622b2b60877dad27e9705ae6408cdb491c/keymorph/unet3d).
+
 
 
 
