@@ -37,8 +37,8 @@ If this work is useful to you, please consider citing the original paper!
 author="Assis, Tiago and Machado, Ines P. and Zwick, Benjamin and Garcia, Nuno C. and Dorent, Reuben",
 editor="Dou, Qi and Ban, Yutong and Jin, Yueming and Bano, Sophia and Unberath, Mathias",
 title="Deep Biomechanically-Guided Interpolation for Keypoint-Based Brain Shift Registration",
-booktitle="Collaborative Intelligence and Autonomy in Image-Guided Surgery",
-year="2026",
+booktitle="International Workshop on Collaborative Intelligence and Autonomy in Image-Guided Surgery",
+year="2025",
 publisher="Springer Cham",
 pages="105--115",
 isbn="978-3-032-09784-2",
@@ -146,6 +146,7 @@ python inference.py \
 <p align="center">
 <img src="assets/registration.gif" width="600">
 </p>
+
 
 
 
