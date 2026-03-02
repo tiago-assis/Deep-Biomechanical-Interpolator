@@ -45,11 +45,11 @@ def get_args() -> argparse.Namespace:
     parser.add_argument('-p', '--preop_scan', type=str, required=True,
                         help='Path to the preoperative scan (.nii or .nii.gz).')
     parser.add_argument('-i', '--init_disp', type=str, default=None,
-                        help='Path to the initial displacement field (.h5). If not provided, will interpolate from the provided keypoints.')
+                        help='Path to the initial displacement field (.h5/.hdf5 or .npz). If not provided, will interpolate from the provided keypoints.')
     parser.add_argument('-k', '--kpt_disps', type=str, default=None,
                         help='Path to the keypoint displacements file (.csv or .txt).')
     parser.add_argument('-m', '--interp_mode', type=str, choices=[
-                        'tps', 'linear'], default='linear', help='Interpolation mode (tps or linear).')
+                        'tps', 'linear'], default='tps', help='Interpolation mode (tps or linear).')
     parser.add_argument('-d', '--device', type=str, choices=[
                         'cuda', 'cpu'], default='cuda', help='Device to run the model on (cuda or cpu).')
     parser.add_argument('-o', '--output', type=str, default=".",
