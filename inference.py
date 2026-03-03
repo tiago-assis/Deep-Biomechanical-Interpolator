@@ -80,7 +80,7 @@ if __name__ == "__main__":
     preop_scan_arr = sitk.GetArrayFromImage(preop_scan) # (D_, H_, W_)
 
     preop_scan_arr = torch.tensor(preop_scan_arr, dtype=torch.float32).unsqueeze(0).unsqueeze(0)  # (1, 1, D_, H_, W_)
-    preop_scan_arr = DivisiblePad(k=16, value=0)(preop_scan_arr)  # pad to be divisible by 2**4 = 16 // (1, 1, D, H, W)
+    preop_scan_arr = DivisiblePad(k=(1, 16, 16, 16), value=0)(preop_scan_arr)  # pad to be divisible by 2**4 = 16 // (1, 1, D, H, W)
     preop_scan_arr = NormalizeIntensity()(preop_scan_arr) # standardize
     preop_scan_arr = preop_scan_arr.to(args.device)
 
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     
     
     init_ddf = torch.tensor(init_ddf, dtype=torch.float32).unsqueeze(0)  # (1, 3, D_, H_, W_) or already (1, 3, D, H, W) if interpolated from keypoints
-    init_ddf = DivisiblePad(k=16, value=0)(init_ddf)  # (1, 3, D, H, W)
+    init_ddf = DivisiblePad(k=(1, 16, 16, 16), value=0)(init_ddf)  # (1, 3, D, H, W)
     init_ddf = torch.where(preop_scan_arr > torch.min(preop_scan_arr), init_ddf, 0) # zero out displacements in background
     init_ddf = init_ddf.to(args.device)
 
