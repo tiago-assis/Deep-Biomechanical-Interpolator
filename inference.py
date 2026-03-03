@@ -11,7 +11,7 @@ from model_pipeline.networks.unet3d.model import ResidualUNetSE3D
 
 # TO DO: more testing
 
-def interpolate_kpts(kpts_disps: str, interp_mode: str, shape: Tuple[int, int, int], device: str = 'cpu') -> torch.Tensor:
+def interpolate_kpts(kpts_disps: str, affine: torch.Tensor, shape: Tuple[int, int, int], interp_mode: str, device: str = 'cpu') -> torch.Tensor:
     D, H, W = shape
     kpts_disps = np.genfromtxt(kpts_disps, delimiter=",", dtype=np.float32)
 
@@ -19,7 +19,8 @@ def interpolate_kpts(kpts_disps: str, interp_mode: str, shape: Tuple[int, int, i
     assert kpts_disps.shape[0] > 0, "No keypoints found in the provided file."
 
     kpts = torch.tensor(kpts_disps[:, :3], dtype=torch.float32)
-    disps = torch.tensor(kpts_disps[:, 3:], dtype=torch.float32).to(device)
+    kpts = torch.linalg.solve(affine[:3, :3], (kpts - affine[:3, 3]).T).T # now in voxel space
+    disps = torch.tensor(kpts_disps[:, 3:], dtype=torch.float32).to(device)        
 
     if interp_mode == 'tps':
         interp = ThinPlateSpline(shape).to(device)
@@ -32,8 +33,7 @@ def interpolate_kpts(kpts_disps: str, interp_mode: str, shape: Tuple[int, int, i
         (kpts[:, 0] / (D - 1)) * 2 - 1
     ], dim=1).to(device)
 
-    init_ddf = interp(kpts_norm.unsqueeze(
-        0), disps.unsqueeze(0))  # (1, 3, D, H, W)
+    init_ddf = interp(kpts_norm.unsqueeze(0), disps.unsqueeze(0))  # (1, 3, D, H, W)
 
     return init_ddf
 
@@ -76,8 +76,10 @@ if __name__ == "__main__":
 
     checkpoint = torch.load(args.weights, map_location=args.device)
 
-    preop_scan = sitk.ReadImage(args.preop_scan)
-    preop_scan_arr = sitk.GetArrayFromImage(preop_scan) # (D_, H_, W_)
+    preop_scan_sitk = sitk.ReadImage(args.preop_scan)
+    preop_scan = nib.load(args.preop_scan)
+    preop_scan_affine = preop_scan.affine
+    preop_scan_arr = preop_scan.get_fdata() # (D_, H_, W_)
 
     preop_scan_arr = torch.tensor(preop_scan_arr, dtype=torch.float32).unsqueeze(0).unsqueeze(0)  # (1, 1, D_, H_, W_)
     preop_scan_arr = DivisiblePad(k=(1, 16, 16, 16), value=0)(preop_scan_arr)  # pad to be divisible by 2**4 = 16 // (1, 1, D, H, W)
@@ -103,12 +105,13 @@ if __name__ == "__main__":
                 raise ValueError("NPZ file must contain exactly one array representing the displacement field.")
             init_ddf = np.load(args.init_disp)[npz_keys[0]].astype(np.float32)
     else:
-        init_ddf = interpolate_kpts(args.kpt_disps, interp_mode=args.interp_mode, shape=preop_scan_arr.shape[2:], device=args.device).squeeze(0) # (3, D_, H_, W_)
-    
+        init_ddf = interpolate_kpts(args.kpt_disps, preop_scan_affine, shape=preop_scan_arr.shape[2:], interp_mode=args.interp_mode, device=args.device).squeeze(0) # (3, D_, H_, W_)
 
-    if init_ddf.shape[0] == 3:
+    
+    init_ddf_shape = init_ddf.shape
+    if init_ddf_shape[0] == 3:
         pass
-    elif init_ddf.shape[-1] == 3:
+    elif init_ddf_shape[-1] == 3:
         init_ddf = np.transpose(init_ddf, (3, 0, 1, 2))  # (3, D_, H_, W_)
     else:
         raise ValueError("Initial displacement field has incorrect shape. (3, D, H, W) or (D, H, W, 3) expected.")
@@ -116,6 +119,7 @@ if __name__ == "__main__":
     
     init_ddf = torch.tensor(init_ddf, dtype=torch.float32).unsqueeze(0)  # (1, 3, D_, H_, W_) or already (1, 3, D, H, W) if interpolated from keypoints
     init_ddf = DivisiblePad(k=(1, 16, 16, 16), value=0)(init_ddf)  # (1, 3, D, H, W)
+    pad = [abs(i-j) // 2 for i, j in zip(init_ddf.shape, init_ddf.shape)]
     init_ddf = torch.where(preop_scan_arr > torch.min(preop_scan_arr), init_ddf, 0) # zero out displacements in background
     init_ddf = init_ddf.to(args.device)
 
@@ -138,17 +142,21 @@ if __name__ == "__main__":
     with torch.no_grad():
         corrected_ddf = model(input).squeeze(0)  # (3, D, H, W)
 
-    corrected_ddf_sitk = corrected_ddf.detach().cpu().numpy().transpose(
-        1, 2, 3, 0).astype(np.float64)  # (D, H, W, 3)
+    # Revert padding to match original shape
+    corrected_ddf = corrected_ddf.narrow(1, pad[2], init_ddf_shape.shape[2])
+    corrected_ddf = corrected_ddf.narrow(2, pad[3], init_ddf_shape.shape[3])
+    corrected_ddf = corrected_ddf.narrow(3, pad[4], init_ddf_shape.shape[4])
     
     if args.output_fmt == 'npz':
-        np.savez_compressed(os.path.join(args.output, "corrected_disp_field.npz"), field=corrected_ddf_sitk)
+        np.savez_compressed(os.path.join(args.output, "corrected_disp_field.npz"), field=corrected_ddf.detach().cpu().numpy())
     else:
-        corrected_ddf_sitk = sitk.GetImageFromArray(
-            corrected_ddf_sitk, isVector=True)
-        corrected_ddf_sitk.SetOrigin(preop_scan.GetOrigin())
-        corrected_ddf_sitk.SetSpacing(preop_scan.GetSpacing())
-        corrected_ddf_sitk.SetDirection(preop_scan.GetDirection())
-        corrected_transform = sitk.DisplacementFieldTransform(corrected_ddf_sitk)
-        sitk.WriteTransform(corrected_transform, os.path.join(
-            args.output, "corrected_disp_field.h5"))
+        # Match SimpleITK conventions
+        corrected_ddf = corrected_ddf.detach().cpu().numpy().transpose(3, 2, 1, 0).astype(np.float64)  # (W, H, D, 3)
+        corrected_ddf[:,:,:,0] = -corrected_ddf[:,:,:,0]
+        corrected_ddf[:,:,:,1] = -corrected_ddf[:,:,:,1]
+        corrected_ddf = sitk.GetImageFromArray(corrected_ddf, isVector=True)
+        corrected_ddf.SetOrigin(preop_scan_sitk.GetOrigin())
+        corrected_ddf.SetSpacing(preop_scan_sitk.GetSpacing())
+        corrected_ddf.SetDirection(preop_scan_sitk.GetDirection())
+        transform = sitk.DisplacementFieldTransform(corrected_ddf)
+        sitk.WriteTransform(transform, os.path.join(args.output, "corrected_disp_field.h5"))
