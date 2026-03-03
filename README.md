@@ -87,7 +87,9 @@ To run a pre-trained model, please download the weights in ![checkpoints](checkp
 \
 Three approaches can then be taken:
 
-**1.** You have access to an initial displacement field and want to run the model for **displacement field correction** only. This displacement must be in H5 or NPZ format.
+**1.** You have access to an initial displacement field and want to run the model for **displacement field correction** only. 
+- This displacement must be in H5 or NPZ format.
+- The preoperative image provided as input to the network should have a spacing of 1x1x1 mm.
 
 Example script:
 ```
@@ -102,7 +104,7 @@ python inference.py \
 \
 **2.** You have access to matched keypoints and their respective sparse displacements and want the framework to (1) **interpolate** and then (2) predict a **corrected** dense displacement field.
 - A text file with keypoint coordinates and displacement vectors should be provided.
-  - The coordinates should be in the RAS coordinate system. ⚠
+  - The coordinates should be in the RAS world coordinates. ⚠
   - The file should follow the format: `x, y, z, disp_x, disp_y, disp_z`
 - Linear or thin-plate spline interpolation modes should be chosen
 
@@ -146,6 +148,7 @@ python inference.py \
 <p align="center">
 <img src="assets/registration.gif" width="600">
 </p>
+
 
 
 
