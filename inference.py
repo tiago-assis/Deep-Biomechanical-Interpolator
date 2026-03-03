@@ -134,7 +134,9 @@ if __name__ == "__main__":
 
     input = torch.cat([init_ddf, preop_scan_arr], dim=1) # (1, 4, D, H, W)
     
-    corrected_ddf = model(input).squeeze(0)  # (3, D, H, W)
+    model.eval()
+    with torch.no_grad():
+        corrected_ddf = model(input).squeeze(0)  # (3, D, H, W)
 
     corrected_ddf_sitk = corrected_ddf.detach().cpu().numpy().transpose(
         1, 2, 3, 0).astype(np.float64)  # (D, H, W, 3)
