@@ -79,9 +79,11 @@ if __name__ == "__main__":
 
     preop_scan_arr, preop_scan_affine, preop_img_sitk = resample_spacing(args.preop_scan) # array is (W_, H_, D_)
     preop_scan_arr = preop_scan_arr.transpose(2, 1, 0) # (D_, H_, W_)
+    original_shape = preop_scan_arr.shape # to revert padding later
 
     preop_scan_arr = torch.tensor(preop_scan_arr, dtype=torch.float32).unsqueeze(0).unsqueeze(0)  # (1, 1, D_, H_, W_)
     preop_scan_arr = DivisiblePad(k=(1, 16, 16, 16), value=0)(preop_scan_arr)  # pad to be divisible by 2**4 = 16 // (1, 1, D, H, W)
+    pad = [abs(i-j) // 2 for i, j in zip(init_ddf.shape, init_ddf.shape)] # to revert padding later
     preop_scan_arr = NormalizeIntensity()(preop_scan_arr) # standardize
     preop_scan_arr = preop_scan_arr.to(args.device)
 
@@ -118,7 +120,6 @@ if __name__ == "__main__":
     
     init_ddf = torch.tensor(init_ddf, dtype=torch.float32).unsqueeze(0)  # (1, 3, D_, H_, W_) or already (1, 3, D, H, W) if interpolated from keypoints
     init_ddf = DivisiblePad(k=(1, 16, 16, 16), value=0)(init_ddf)  # (1, 3, D, H, W)
-    pad = [abs(i-j) // 2 for i, j in zip(init_ddf.shape, init_ddf.shape)]
     init_ddf = torch.where(preop_scan_arr > torch.min(preop_scan_arr), init_ddf, 0) # zero out displacements in background
     init_ddf = init_ddf.to(args.device)
 
@@ -142,9 +143,9 @@ if __name__ == "__main__":
         corrected_ddf = model(input).squeeze(0)  # (3, D, H, W)
 
     # Revert padding to match original shape
-    corrected_ddf = corrected_ddf.narrow(1, pad[2], init_ddf_shape.shape[2])
-    corrected_ddf = corrected_ddf.narrow(2, pad[3], init_ddf_shape.shape[3])
-    corrected_ddf = corrected_ddf.narrow(3, pad[4], init_ddf_shape.shape[4])
+    corrected_ddf = corrected_ddf.narrow(1, pad[2], original_shape.shape[0])
+    corrected_ddf = corrected_ddf.narrow(2, pad[3], original_shape.shape[1])
+    corrected_ddf = corrected_ddf.narrow(3, pad[4], original_shape.shape[2])
     
     if args.output_fmt == 'npz':
         np.savez_compressed(os.path.join(args.output, "corrected_disp_field.npz"), field=corrected_ddf.detach().cpu().numpy())
