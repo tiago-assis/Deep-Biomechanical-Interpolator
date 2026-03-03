@@ -177,7 +177,7 @@ def load_checkpoint(checkpoint_path: str,
 
 
 def resample_spacing(input_path: str, new_spacing: list[float] = [1.0, 1.0, 1.0], interpolator: int = sitk.sitkLinear, \
-                     verbose: bool = False) -> Tuple[np.ndarray, np.ndarray]:
+                     verbose: bool = False) -> Tuple[np.ndarray, np.ndarray, sitk.Image]:
     """
     Resamples the spacing of a medical image to the specified new spacing.
     
@@ -190,6 +190,7 @@ def resample_spacing(input_path: str, new_spacing: list[float] = [1.0, 1.0, 1.0]
     Returns:
         resampled_image_arr (np.ndarray): The resampled image as a Numpy array.
         new_affine (np.ndarray): The new affine transformation matrix corresponding to the resampled image.
+        resampled_image (sitk.Image): The resampled image as a SimpleITK Image object.
     """    
     input_img_name = os.path.basename(input_path)
     if verbose:
@@ -236,4 +237,4 @@ def resample_spacing(input_path: str, new_spacing: list[float] = [1.0, 1.0, 1.0]
     new_affine[:3, :3] = np.diag([-1, -1, 1]) @ (resampled_direction * resampled_spacing)
     new_affine[:3, 3] = np.diag([-1, -1, 1]) @ resampled_origin
 
-    return resampled_image_arr, new_affine
+    return resampled_image_arr, new_affine, resampled_image
