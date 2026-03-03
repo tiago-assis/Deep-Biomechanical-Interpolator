@@ -18,8 +18,8 @@ def interpolate_kpts(kpts_disps: str, interp_mode: str, shape: Tuple[int, int, i
     assert kpts_disps.shape[1] == 6, "Keypoint displacements file must have 6 columns: x, y, z coordinates and disp_x, disp_y, disp_z displacements."
     assert kpts_disps.shape[0] > 0, "No keypoints found in the provided file."
 
-    kpts = torch.from_numpy(kpts_disps[:, :3])
-    disps = torch.from_numpy(kpts_disps[:, 3:]).to(device)
+    kpts = torch.tensor(kpts_disps[:, :3], dtype=torch.float32)
+    disps = torch.tensor(kpts_disps[:, 3:], dtype=torch.float32).to(device)
 
     if interp_mode == 'tps':
         interp = ThinPlateSpline(shape).to(device)
