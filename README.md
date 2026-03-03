@@ -89,7 +89,6 @@ Three approaches can then be taken:
 
 **1.** You have access to an initial displacement field and want to run the model for **displacement field correction** only. 
 - This displacement must be in H5 or NPZ format.
-- The preoperative image provided as input to the network should have a spacing of 1x1x1 mm.
 
 Example script:
 ```
@@ -148,6 +147,7 @@ python inference.py \
 <p align="center">
 <img src="assets/registration.gif" width="600">
 </p>
+
 
 
 
