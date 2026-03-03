@@ -102,16 +102,16 @@ python inference.py \
 \
 **2.** You have access to matched keypoints and their respective sparse displacements and want the framework to (1) **interpolate** and then (2) predict a **corrected** dense displacement field.
 - A text file with keypoint coordinates and displacement vectors should be provided.
-  - The coordinates should be in the RAS coordinate system.
+  - The coordinates should be in the RAS coordinate system. ⚠
   - The file should follow the format: `x, y, z, disp_x, disp_y, disp_z`
-- Linear or thin plate spline interpolation modes should be chosen
+- Linear or thin-plate spline interpolation modes should be chosen
 
 Example script:
 ```
 python inference.py \
   -p /path/to/preoperative/scan.nii.gz \
-  -k /path/to/keypoints/and/displacements.csv \
-  -m linear \
+  -k /path/to/keypoints/and/displacements.txt \
+  -m tps \
   -d cuda \
   -o /path/to/output/directory/
   -f h5
@@ -139,13 +139,14 @@ python inference.py \
 - The biomechanical framework by Yu *et al.* [[1]](https://doi.org/10.1002/cnm.3539), [[2]](https://doi.org/10.1016/j.compbiomed.2022.105271) was used to generate synthetic ground-truth brain deformations.
 - [SynthSeg](https://github.com/BBillot/SynthSeg) [[3]](https://doi.org/10.1016/j.media.2023.102789) was employed to segment the brain parenchyma and cerebrospinal fluid from the MRI scans.
 - The [3D SIFT-Rank](https://github.com/3dsift-rank/3DSIFT-Rank/tree/Appearance%2BGeometry) [[4]](https://doi.org/10.1016/j.neuroimage.2019.116208) algorithm was utilized to extract sparse anatomical keypoints from the preoperative images.
-- These publicly available implementations of the [Delaunay triangulation-based linear interpolation](https://github.com/SamuelJoutard/DrivingPointsPredictionMIR/blob/01e3dd8c4188e70a6113209335f2ecaf1ce0a75d/models.py#L802) and [thin plate spline interpolation](https://github.com/mattiaspaul/VoxelMorphPlusPlus/blob/0f8da77b4d5bb4df80d188188df9725013bb960b/src/utils_voxelmorph_plusplus.py#L271) algorithms were used as a baseline and to compute initial displacement fields.
+- These publicly available implementations of the [Delaunay triangulation-based linear interpolation](https://github.com/SamuelJoutard/DrivingPointsPredictionMIR/blob/01e3dd8c4188e70a6113209335f2ecaf1ce0a75d/models.py#L802) and [thin-plate spline interpolation](https://github.com/mattiaspaul/VoxelMorphPlusPlus/blob/0f8da77b4d5bb4df80d188188df9725013bb960b/src/utils_voxelmorph_plusplus.py#L271) algorithms were used as a baseline and to compute initial displacement fields.
 - Part of the code used for implementing the network architectures can be publicly found [here](https://github.com/alanqrwang/keymorph/tree/dcb799622b2b60877dad27e9705ae6408cdb491c/keymorph/unet3d).
 
 ## Cool registration GIF!
 <p align="center">
 <img src="assets/registration.gif" width="600">
 </p>
+
 
 
 
