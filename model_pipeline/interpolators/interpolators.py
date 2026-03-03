@@ -11,7 +11,7 @@ class LinearInterpolation3d(nn.Module):
     """
     Performs linear interpolation of sparse 3D displacements onto a dense grid using Delaunay triangulation.
 
-    Based on:
+    Based on, which actually includes an implementation that allows for backpropagation:
     'Driving Points Prediction for Abdominal Probabilistic Registration'
     https://github.com/SamuelJoutard/DrivingPointsPredictionMIR/blob/01e3dd8c4188e70a6113209335f2ecaf1ce0a75d/models.py#L685
     """
@@ -258,7 +258,7 @@ class ThinPlateSpline(nn.Module):
         ra = (a ** 2).sum(dim=1).view(-1, 1)
         rb = (b ** 2).sum(dim=1).view(1, -1)
         dist = ra + rb - 2.0 * torch.mm(a, b.T)
-        return torch.sqrt(torch.clamp(dist, min=0.0))
+        return torch.sqrt(torch.clamp(dist, min=1e-8))
 
     def _u(self, r: torch.Tensor) -> torch.Tensor:
         """
@@ -270,4 +270,4 @@ class ThinPlateSpline(nn.Module):
         Returns:
             torch.Tensor: Radial basis matrix (M, N).
         """
-        return (r ** 2) * torch.log(r + 1e-6)
+        return (r ** 2) * torch.log(r + 1e-8)
