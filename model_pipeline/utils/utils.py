@@ -174,3 +174,66 @@ def load_checkpoint(checkpoint_path: str,
         print(f"\nLoaded checkpoint {'\''+filename+'\' ' if filename else ''}from epoch {checkpoint['epoch']} (MSE: {checkpoint['loss']:.4f})")
         
     return checkpoint
+
+
+def resample_spacing(input_path: str, new_spacing: list[float] = [1.0, 1.0, 1.0], interpolator: int = sitk.sitkLinear, \
+                     verbose: bool = False) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Resamples the spacing of a medical image to the specified new spacing.
+    
+    Args:
+        input (str): Path to a directory containing case folders with images in NIfTI or NRRD files.
+        new_spacing (list of float, optional): Desired spacing for the output image. Defaults to [1.0, 1.0, 1.0].
+        interpolator (int, optional): Interpolator to be used during resampling. Default to sitk.sitkLinear.
+        verbose (bool, optional): If True, prints additional information about the resampling process. Defaults to False.
+
+    Returns:
+        resampled_image_arr (np.ndarray): The resampled image as a Numpy array.
+        new_affine (np.ndarray): The new affine transformation matrix corresponding to the resampled image.
+    """    
+    input_img_name = os.path.basename(input_path)
+    if verbose:
+        print(f"Resampling spacing for image '{input_img_name}'...")
+    
+    input_image = sitk.ReadImage(input_path)
+
+    original_spacing = input_image.GetSpacing()
+    original_size = input_image.GetSize()
+
+    # Skip if the image already has the desired spacing
+    if np.allclose(original_spacing, new_spacing):
+        if verbose:
+            print(f"\tImage '{input_img_name}' already has the desired spacing. Skipping resampling.\n")
+        return sitk.GetArrayFromImage(input_image)
+
+    if verbose:
+        print(f"\tOriginal spacing: {np.array(original_spacing)}", )
+        print(f"\tOriginal size: {np.array(original_size)}", )
+
+    new_size = [int(round(original_size[i] * (original_spacing[i] / new_spacing[i]))) for i in range(3)]
+
+    if verbose:
+        print(f"\tNew spacing: {new_spacing}")
+        print(f"\tNew size: {new_size}")
+
+    resampler = sitk.ResampleImageFilter()
+    resampler.SetOutputSpacing(new_spacing)
+    resampler.SetSize(new_size)
+    resampler.SetOutputOrigin(input_image.GetOrigin())
+    resampler.SetOutputDirection(input_image.GetDirection())
+    resampler.SetOutputPixelType(input_image.GetPixelID())
+    resampler.SetInterpolator(interpolator)
+
+    resampled_image = resampler.Execute(input_image)
+    resampled_image_arr = sitk.GetArrayFromImage(resampled_image)
+
+    resampled_direction = np.array(resampled_image.GetDirection()).reshape(3, 3)
+    resampled_spacing = np.array(resampled_image.GetSpacing())
+    resampled_origin = np.array(resampled_image.GetOrigin())
+
+    # Build affine matrix
+    new_affine = np.eye(4)
+    new_affine[:3, :3] = np.diag([-1, -1, 1]) @ (resampled_direction * resampled_spacing)
+    new_affine[:3, 3] = np.diag([-1, -1, 1]) @ resampled_origin
+
+    return resampled_image_arr, new_affine
