@@ -102,7 +102,7 @@ python inference.py \
 \
 **2.** You have access to matched keypoints and their respective sparse displacements and want the framework to (1) **interpolate** and then (2) predict a **corrected** dense displacement field.
 - A text file with keypoint coordinates and displacement vectors should be provided.
-  - The coordinates should be in voxel space.
+  - The coordinates should be in the RAS coordinate system.
   - The file should follow the format: `x, y, z, disp_x, disp_y, disp_z`
 - Linear or thin plate spline interpolation modes should be chosen
 
@@ -146,6 +146,7 @@ python inference.py \
 <p align="center">
 <img src="assets/registration.gif" width="600">
 </p>
+
 
 
 
