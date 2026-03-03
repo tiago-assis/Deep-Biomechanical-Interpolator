@@ -8,6 +8,7 @@ import SimpleITK as sitk
 from monai.transforms import NormalizeIntensity, ResizeWithPadOrCrop, DivisiblePad
 from model_pipeline.interpolators.interpolators import ThinPlateSpline, LinearInterpolation3d
 from model_pipeline.networks.unet3d.model import ResidualUNetSE3D
+from model_pipeline.utils import resample_spacing
 
 # TO DO: more testing
 
@@ -76,26 +77,24 @@ if __name__ == "__main__":
 
     checkpoint = torch.load(args.weights, map_location=args.device)
 
-    preop_scan_sitk = sitk.ReadImage(args.preop_scan)
-    preop_scan = nib.load(args.preop_scan)
-    preop_scan_affine = preop_scan.affine
-    preop_scan_arr = preop_scan.get_fdata() # (D_, H_, W_)
+    preop_scan_arr, preop_scan_affine, preop_img_sitk = resample_spacing(args.preop_scan) # array is (W_, H_, D_)
+    preop_scan_arr = preop_scan_arr.transpose(2, 1, 0) # (D_, H_, W_)
 
     preop_scan_arr = torch.tensor(preop_scan_arr, dtype=torch.float32).unsqueeze(0).unsqueeze(0)  # (1, 1, D_, H_, W_)
     preop_scan_arr = DivisiblePad(k=(1, 16, 16, 16), value=0)(preop_scan_arr)  # pad to be divisible by 2**4 = 16 // (1, 1, D, H, W)
     preop_scan_arr = NormalizeIntensity()(preop_scan_arr) # standardize
     preop_scan_arr = preop_scan_arr.to(args.device)
 
-
+    
     if args.init_disp is not None:
         if args.init_disp.endswith('.h5') or args.init_disp.endswith('.hdf5'):
             transform = sitk.ReadTransform(args.init_disp)
             init_ddf = sitk.TransformToDisplacementField(transform,
                                                         sitk.sitkVectorFloat64,
-                                                        preop_scan.GetSize(),
-                                                        preop_scan.GetOrigin(),
-                                                        preop_scan.GetSpacing(),
-                                                        preop_scan.GetDirection()
+                                                        preop_img_sitk.GetSize(),
+                                                        preop_img_sitk.GetOrigin(),
+                                                        preop_img_sitk.GetSpacing(),
+                                                        preop_img_sitk.GetDirection()
                                                         )
             init_ddf = sitk.GetArrayFromImage(init_ddf).astype(np.float32)
         else:
@@ -155,8 +154,8 @@ if __name__ == "__main__":
         corrected_ddf[:,:,:,0] = -corrected_ddf[:,:,:,0]
         corrected_ddf[:,:,:,1] = -corrected_ddf[:,:,:,1]
         corrected_ddf = sitk.GetImageFromArray(corrected_ddf, isVector=True)
-        corrected_ddf.SetOrigin(preop_scan_sitk.GetOrigin())
-        corrected_ddf.SetSpacing(preop_scan_sitk.GetSpacing())
-        corrected_ddf.SetDirection(preop_scan_sitk.GetDirection())
+        corrected_ddf.SetOrigin(preop_img_sitk.GetOrigin())
+        corrected_ddf.SetSpacing(preop_img_sitk.GetSpacing())
+        corrected_ddf.SetDirection(preop_img_sitk.GetDirection())
         transform = sitk.DisplacementFieldTransform(corrected_ddf)
         sitk.WriteTransform(transform, os.path.join(args.output, "corrected_disp_field.h5"))
