@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
     preop_scan_arr = torch.tensor(preop_scan_arr, dtype=torch.float32).unsqueeze(0).unsqueeze(0)  # (1, 1, D_, H_, W_)
     preop_scan_arr = DivisiblePad(k=(1, 16, 16, 16), value=0)(preop_scan_arr)  # pad to be divisible by 2**4 = 16 // (1, 1, D, H, W)
-    pad = [abs(i-j) // 2 for i, j in zip(init_ddf.shape, init_ddf.shape)] # to revert padding later
+    pad = [abs(i-j) // 2 for i, j in zip(preop_scan_arr.shape, preop_scan_arr.shape)] # to revert padding later
     preop_scan_arr = NormalizeIntensity()(preop_scan_arr) # standardize
     preop_scan_arr = preop_scan_arr.to(args.device)
 
